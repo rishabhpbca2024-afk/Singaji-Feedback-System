@@ -1,0 +1,787 @@
+/* =========================================
+   FACULTY FEEDBACK PAGE
+========================================= */
+
+.faculty-feedback-page {
+    width: 100%;
+    min-height: 100%;
+    padding: 28px;
+    background: #f7f8fc;
+    box-sizing: border-box;
+}
+.feedback-student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.feedback-student-info span {
+    color: #374151;
+    font-size: 13px;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.faculty-feedback-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+
+.faculty-feedback-header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.faculty-feedback-header p {
+    margin: 7px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   DATE FILTER
+========================================= */
+
+.faculty-feedback-date-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 10px 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.faculty-feedback-date-box label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.faculty-feedback-date-box input {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1f2937;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+.faculty-feedback-date-box input:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+
+/* =========================================
+   SELECTED DATE
+========================================= */
+
+.selected-feedback-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.selected-feedback-date strong {
+    color: #374151;
+}
+
+
+/* =========================================
+   FACULTY INFO
+========================================= */
+
+.faculty-info-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.faculty-avatar {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #4f46e5;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.faculty-info-content h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #1f2937;
+}
+
+.faculty-info-content p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.feedback-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.feedback-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.summary-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: #eef2ff;
+    font-size: 21px;
+}
+
+.feedback-summary-card span {
+    display: block;
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.feedback-summary-card strong {
+    display: block;
+    color: #1f2937;
+    font-size: 25px;
+    line-height: 1;
+}
+
+.feedback-summary-card strong small {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+
+/* =========================================
+   SECTION TITLE
+========================================= */
+
+.lectures-section {
+    width: 100%;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+.section-title h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 21px;
+}
+
+.section-title p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.lecture-count {
+    padding: 7px 12px;
+    background: #eef2ff;
+    color: #4f46e5;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================
+   LECTURE LIST
+========================================= */
+
+.lecture-feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+
+/* =========================================
+   LECTURE CARD
+========================================= */
+
+.lecture-card {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.lecture-card-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.lecture-number {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.lecture-main-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.lecture-main-info h3 {
+    margin: 0 0 7px;
+    font-size: 18px;
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.lecture-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lecture-meta span {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 9px;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+    border-radius: 7px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.lecture-response {
+    text-align: right;
+    min-width: 90px;
+}
+
+.lecture-response strong {
+    display: block;
+    color: #1f2937;
+    font-size: 22px;
+}
+
+.lecture-response span {
+    display: block;
+    color: #6b7280;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+
+/* =========================================
+   RATINGS
+========================================= */
+
+.rating-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    padding: 18px 20px;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.rating-item {
+    padding: 0 15px;
+    border-right: 1px solid #edf0f4;
+}
+
+.rating-item:first-child {
+    padding-left: 0;
+}
+
+.rating-item:last-child {
+    border-right: none;
+    padding-right: 0;
+}
+
+.rating-label {
+    color: #6b7280;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.rating-value-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rating-value-row strong {
+    color: #1f2937;
+    font-size: 17px;
+}
+
+.rating-stars {
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.rating-good {
+    color: #16a34a;
+}
+
+.rating-average {
+    color: #d97706;
+}
+
+.rating-low {
+    color: #dc2626;
+}
+
+
+/* =========================================
+   INDIVIDUAL FEEDBACK
+========================================= */
+
+.individual-feedback-section {
+    padding: 18px 20px 20px;
+}
+
+.individual-feedback-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.individual-feedback-title h4 {
+    margin: 0;
+    font-size: 15px;
+    color: #374151;
+}
+
+.individual-feedback-title span {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #f3f4f6;
+    color: #4b5563;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.feedback-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.individual-feedback-item {
+    padding: 14px;
+    border: 1px solid #edf0f4;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.feedback-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+}
+
+.feedback-number {
+    color: #4f46e5;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.feedback-time {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+.feedback-item-ratings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.mini-rating {
+    padding: 4px 7px;
+    border-radius: 6px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 10px;
+}
+
+.mini-rating b {
+    color: #374151;
+}
+
+.feedback-remarks {
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.feedback-remarks span {
+    display: block;
+    margin-bottom: 4px;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.feedback-remarks p {
+    margin: 0;
+    color: #374151;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.feedback-loading {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+}
+
+.feedback-spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #4f46e5;
+    border-radius: 50%;
+    animation: feedback-spin 0.8s linear infinite;
+}
+
+.feedback-loading p {
+    margin: 12px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+@keyframes feedback-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.feedback-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+}
+
+.feedback-error-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fee2e2;
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.feedback-error h3 {
+    margin: 0;
+    color: #991b1b;
+    font-size: 15px;
+}
+
+.feedback-error p {
+    margin: 5px 0 12px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+.feedback-error button {
+    border: none;
+    padding: 8px 13px;
+    border-radius: 7px;
+    background: #4f46e5;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.feedback-error button:hover {
+    opacity: 0.9;
+}
+
+
+/* =========================================
+   NO FEEDBACK
+========================================= */
+
+/* =========================================
+   NO FEEDBACK FOR LECTURE
+========================================= */
+
+.lecture-no-feedback {
+    padding: 14px 20px 18px;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.no-feedback-card {
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+}
+
+.no-feedback-icon {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.no-feedback-card h2 {
+    margin: 0;
+    color: #374151;
+    font-size: 19px;
+}
+
+.no-feedback-card p {
+    max-width: 450px;
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1000px) {
+
+    .feedback-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rating-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .rating-item {
+        border-right: none;
+        padding: 0;
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .faculty-feedback-page {
+        padding: 18px;
+    }
+
+    .faculty-feedback-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .faculty-feedback-date-box {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: space-between;
+    }
+
+    .faculty-feedback-date-box input {
+        flex: 1;
+    }
+
+    .feedback-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lecture-card-header {
+        align-items: flex-start;
+    }
+
+    .lecture-response {
+        min-width: 65px;
+    }
+
+    .rating-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rating-item {
+        padding: 8px 0;
+    }
+
+}
+
+
+@media (max-width: 520px) {
+
+    .faculty-feedback-page {
+        padding: 12px;
+    }
+
+    .faculty-feedback-header h1 {
+        font-size: 24px;
+    }
+
+    .faculty-feedback-date-box {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .faculty-feedback-date-box input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .faculty-info-card {
+        padding: 14px;
+    }
+
+    .faculty-avatar {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        font-size: 18px;
+    }
+
+    .faculty-info-content h2 {
+        font-size: 17px;
+    }
+
+    .lecture-card-header {
+        padding: 15px;
+        flex-wrap: wrap;
+    }
+
+    .lecture-main-info {
+        width: calc(100% - 60px);
+    }
+
+    .lecture-response {
+        width: 100%;
+        text-align: left;
+        padding-left: 57px;
+    }
+
+    .rating-grid {
+        grid-template-columns: 1fr 1fr;
+        padding: 14px 15px;
+    }
+
+    .rating-item-overall {
+        grid-column: 1 / -1;
+    }
+
+    .individual-feedback-section {
+        padding: 15px;
+    }
+
+    .feedback-item-top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+}

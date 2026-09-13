@@ -1,0 +1,201 @@
+/* =============================================
+   Singaji Feedback System – Global Design System
+   Clean Modern Enterprise Theme
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Brand Color Palette */
+  --primary: #f97316;
+  --primary-hover: #ea580c;
+  --primary-active: #c2410c;
+  --primary-light: #ffedd5;
+  --primary-subtle: #fff7ed;
+
+  /* Neutral Spectrum */
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border-light: #e2e8f0;
+  --border-hover: #cbd5e1;
+
+  /* Status Colors */
+  --success: #10b981;
+  --success-bg: #ecfdf5;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+  --danger: #ef4444;
+  --danger-bg: #fef2f2;
+
+  /* Elevation Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-sm: 0 2px 4px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* =============================================
+   SHARED BUTTON UTILITIES
+   ============================================= */
+
+/* Action Button Group Alignment */
+.action-buttons-group,
+.faculty-actions,
+.q-actions,
+.course-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-edit,
+.btn-view,
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+/* Secondary / Edit */
+.btn-edit {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+}
+
+.btn-edit:hover {
+  background: #f8fafc;
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+/* View / History */
+.btn-view {
+  background: #6366f1;
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+.btn-view:hover {
+  background: #4f46e5;
+}
+
+/* Delete */
+.btn-delete {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.btn-delete:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+/* Modal Primary Danger Action Button */
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 22px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+  transition: all 0.25s ease;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Star & Rating Utilities */
+.star-display, .star-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.star-on, .star-filled {
+  color: #f59e0b;
+  display: inline-flex;
+}
+
+.star-off, .star-empty {
+  color: #d1d5db;
+  display: inline-flex;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}

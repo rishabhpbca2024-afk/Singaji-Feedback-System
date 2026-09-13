@@ -1,0 +1,275 @@
+/* ========================================
+   MANAGE FACULTY — Modern Commercial Design
+======================================== */
+
+.manage-faculty {
+    width: 100%;
+    box-sizing: border-box;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.manage-faculty h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    letter-spacing: -0.03em;
+}
+
+.faculty-page-title p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: var(--text-secondary, #475569);
+    font-weight: 500;
+}
+
+/* ========================================
+   DEPARTMENT GRID
+======================================== */
+
+.faculty-department-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-top: 28px;
+}
+
+.faculty-department-card {
+    min-height: 220px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 20px;
+    color: var(--text-primary, #0f172a);
+    cursor: pointer;
+
+    box-shadow: var(--shadow-sm, 0 2px 4px 0 rgba(15, 23, 42, 0.04));
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faculty-department-card:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.faculty-department-image {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.faculty-department-card h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary, #0f172a);
+    letter-spacing: -0.02em;
+}
+
+.faculty-dept-sub {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary, #475569);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* ========================================
+   BACK BUTTON & HEADER
+======================================== */
+
+.faculty-back-button {
+    margin-bottom: 24px;
+    padding: 10px 18px;
+    background: #ffffff;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 12px;
+    color: var(--text-secondary, #475569);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition: all 0.2s ease;
+}
+
+.faculty-back-button:hover {
+    background: #f8fafc;
+    color: var(--text-primary, #0f172a);
+    border-color: #cbd5e1;
+}
+
+.faculty-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.add-faculty-button {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+    transition: all 0.25s ease;
+}
+
+.add-faculty-button:hover {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+}
+
+/* ========================================
+   FACULTY LIST & ROWS
+======================================== */
+
+.faculty-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 950px;
+}
+
+.faculty-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 18px 24px;
+    background: #ffffff;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 16px;
+    box-shadow: var(--shadow-xs);
+    transition: all 0.25s ease;
+}
+
+.faculty-row:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: #cbd5e1;
+}
+
+.faculty-avatar {
+    width: 50px;
+    height: 50px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    color: #ffffff;
+    font-size: 19px;
+    font-weight: 800;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+
+.faculty-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.faculty-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+}
+
+.faculty-info p {
+    margin: 3px 0 6px;
+    font-size: 13px;
+    color: var(--text-secondary, #475569);
+}
+
+.faculty-subject-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: var(--text-secondary, #475569);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ========================================
+   FACULTY ACTIONS & MODAL
+======================================== */
+
+.faculty-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-edit,
+.btn-view {
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-edit {
+    background: #ffffff;
+    border: 1px solid var(--border-light, #e2e8f0);
+    color: var(--text-secondary, #475569);
+}
+
+.btn-edit:hover {
+    background: #f8fafc;
+    color: var(--text-primary, #0f172a);
+    border-color: #cbd5e1;
+}
+
+.btn-view {
+    background: #6366f1;
+    border: none;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.btn-view:hover {
+    background: #4f46e5;
+}
+
+.faculty-count {
+    width: fit-content;
+    margin-top: 24px;
+    padding: 10px 18px;
+    background: #ffffff;
+    border: 1px solid var(--border-light, #e2e8f0);
+    border-radius: 12px;
+    color: var(--text-secondary, #475569);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+@media (max-width: 1100px) {
+    .faculty-department-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .faculty-department-grid {
+        grid-template-columns: 1fr;
+    }
+    .faculty-header, .faculty-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

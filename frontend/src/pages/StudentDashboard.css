@@ -1,0 +1,140 @@
+.student-container {
+    min-height: 100vh;
+    background-image: linear-gradient(rgba(245, 247, 251, 0.55), rgba(245, 247, 251, 0.55)), url("../assets/back.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.student-header {
+    height: 76px;
+    padding: 0 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.student-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.header-brand h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.header-brand p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: #4b5563;
+}
+
+.student-logout-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+    color: #ffffff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+}
+
+.student-main {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.welcome-banner {
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+    transition: all 0.25s ease;
+}
+
+.welcome-banner:hover {
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(10px);
+}
+
+.welcome-banner h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    color: #111827;
+}
+
+.welcome-banner p {
+    margin: 0;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.student-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.student-card {
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+}
+
+.student-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.student-card h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #111827;
+}
+
+.student-card p {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.student-card-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+    color: #ffffff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+}
+
+.student-card-btn.secondary {
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    box-shadow: none;
+}
+

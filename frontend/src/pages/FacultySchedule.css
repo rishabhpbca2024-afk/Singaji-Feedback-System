@@ -1,0 +1,212 @@
+/* ========================================
+   FACULTY TIMETABLE SHARED CSS
+======================================================== */
+
+.faculty-page-header {
+    margin-bottom: 24px;
+}
+
+.faculty-page-header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.faculty-page-header p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+/* DASHBOARD SPECIFIC */
+.faculty-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.faculty-stat-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s;
+}
+
+.faculty-stat-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #111827;
+}
+
+/* TIMETABLE WRAPPER */
+.timetable-wrapper {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.timetable-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 16px;
+}
+
+.institute-info h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #ea580c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.institute-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.btn-share-schedule {
+    background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-share-schedule:hover {
+    background: linear-gradient(135deg, #c2410c 0%, #b45309 100%);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+/* TIMETABLE TABLE */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.academic-timetable {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    font-size: 13px;
+    border: 1px solid #d1d5db;
+}
+
+.academic-timetable th,
+.academic-timetable td {
+    border: 1px solid #d1d5db;
+    padding: 12px 14px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.academic-timetable thead th {
+    background: #f9fafb;
+    color: #111827;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.timing-header {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+}
+
+.break-cell {
+    background: #fffbeb;
+    color: #92400e;
+    font-weight: 800;
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    text-align: center;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.slot-subject {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+.slot-faculty {
+    font-weight: 500;
+    color: #4b5563;
+    font-size: 12px;
+}
+
+.empty-slot {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.my-assigned-slot {
+    background: #fff7ed !important;
+    border: 2px solid #fdba74 !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .faculty-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .timetable-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .btn-share-schedule {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .faculty-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

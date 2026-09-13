@@ -1,0 +1,246 @@
+/* ========================================
+   MANAGE LECTURES PAGE
+======================================== */
+
+.manage-lectures-page {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lectures-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.lectures-header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.lectures-header p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+
+/* LECTURES LIST */
+
+.lectures-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 900px;
+}
+
+.lecture-row-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+
+    /* NORMAL WHITE BACKGROUND */
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lecture-row-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+.lecture-main-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.lecture-time-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    min-width: 140px;
+}
+
+.lecture-time-badge span {
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.lecture-time-badge strong {
+    font-size: 13px;
+    color: #111827;
+}
+
+.lecture-details h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.lecture-details p {
+    margin: 0 0 6px;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.room-tag {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.lecture-status-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.add-btn {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+    transition: all 0.2s ease;
+}
+
+.add-btn:hover {
+    background: linear-gradient(135deg, #c2410c 0%, #b45309 100%);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.scheduled {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.status-badge.in-progress {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.status-badge.completed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.lecture-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+
+/* MODAL FORM */
+
+.lecture-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 10px;
+}
+
+/* Date Filter Only */
+.lecture-date-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lecture-date-filter label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.lecture-date-filter input {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    color: #374151;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lecture-date-filter input:hover {
+    border-color: #9ca3af;
+}
+
+.lecture-date-filter input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .lecture-date-filter {
+        width: 100%;
+    }
+
+    .lecture-date-filter input {
+        flex: 1;
+    }
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 750px) {
+    .lectures-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .lecture-row-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .lecture-main-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+
+    }
+
+    .lecture-status-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}

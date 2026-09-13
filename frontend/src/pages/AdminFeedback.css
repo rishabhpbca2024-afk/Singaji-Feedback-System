@@ -1,0 +1,374 @@
+/* ========================================
+   ADMIN FEEDBACK PAGE
+======================================== */
+
+.admin-feedback-page {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+
+.af-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.af-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.4px;
+}
+
+.af-header p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.af-alert-pill {
+  padding: 8px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 20px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  align-self: center;
+}
+
+
+/* ========================================
+   SUMMARY CARDS
+======================================== */
+
+.af-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.af-summary-card {
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.af-summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.af-summary-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.af-value-alert {
+  color: #d97706;
+}
+
+
+/* ========================================
+   FILTERS
+======================================== */
+
+.af-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.af-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: 'Inter', Arial, sans-serif;
+  color: #111827;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.af-search:focus {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+}
+
+.af-select {
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: 'Inter', Arial, sans-serif;
+  color: #374151;
+  background: #ffffff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.af-select:focus {
+  border-color: #ea580c;
+}
+
+
+/* ========================================
+   TABLE WRAPPER
+======================================== */
+
+.af-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+}
+
+.af-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.af-table thead tr {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.af-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.af-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+
+.af-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.af-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.af-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+/* Alert row — low score */
+.af-row-alert {
+  background: #fffbeb !important;
+  border-left: 3px solid #f59e0b;
+}
+
+.af-row-alert:hover {
+  background: #fef3c7 !important;
+}
+
+
+/* ========================================
+   TABLE CELL CONTENT
+======================================== */
+
+.af-faculty-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.af-course-name {
+  margin-top: 3px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.af-dept-tag {
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.af-rating-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 3px;
+}
+
+/* Stars */
+.star-display {
+  display: flex;
+  gap: 1px;
+}
+
+.star-on {
+  color: #f59e0b;
+  font-size: 12px;
+}
+
+.star-off {
+  color: #d1d5db;
+  font-size: 12px;
+}
+
+.af-comment {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  line-height: 1.5;
+  max-width: 240px;
+  margin: 0;
+}
+
+.af-date {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+
+/* ========================================
+   STATUS BADGES
+======================================== */
+
+.af-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.af-status-reviewed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.af-status-pending {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.af-status-needs-review {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+
+/* ========================================
+   EMPTY STATE
+======================================== */
+
+.af-empty {
+  text-align: center;
+  padding: 40px !important;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+
+/* ========================================
+   TABLE FOOTER
+======================================== */
+
+.af-table-footer {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1000px) {
+  .af-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .af-header {
+    flex-direction: column;
+  }
+
+  .af-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .af-filters {
+    flex-direction: column;
+  }
+
+  .af-search {
+    min-width: unset;
+  }
+}
+
+/* ========================================
+   VIEW BUTTON
+======================================== */
+
+.af-view-btn {
+  padding: 7px 16px;
+  border: 1px solid #ea580c;
+  border-radius: 7px;
+  background: #ea580c;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition: all 0.2s ease;
+}
+
+.af-view-btn:hover {
+  background: #c2410c;
+  border-color: #c2410c;
+  box-shadow: 0 3px 8px rgba(234, 88, 12, 0.25);
+}

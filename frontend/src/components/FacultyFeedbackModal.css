@@ -1,0 +1,389 @@
+/* FacultyFeedbackModal.css - Professional Clean Light Theme matching Admin Dashboard */
+
+.ffm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ffm-content {
+  background: #ffffff;
+  color: #111827;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  animation: ffmFadeIn 0.2s ease-out;
+}
+
+@keyframes ffmFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header */
+.ffm-header {
+  padding: 20px 24px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ffm-header-info h2 {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.ffm-sub-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ffm-badge {
+  background: #ea580c;
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ffm-date {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ffm-close-btn {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ffm-close-btn:hover {
+  background: #ea580c;
+  color: #ffffff;
+  border-color: #ea580c;
+}
+
+/* Body */
+.ffm-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  background: #ffffff;
+}
+
+.ffm-overview-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.ffm-overview-card {
+  background: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ffm-ov-label {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.ffm-ov-rating {
+  font-size: 18px;
+  color: #1e293b;
+}
+
+.ffm-ov-rating strong {
+  color: #d97706;
+}
+
+.ffm-ov-num {
+  font-size: 18px;
+  color: #2563eb;
+}
+
+.ffm-section-title {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Lecture Card */
+.ffm-lecture-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.ffm-lecture-card.ffm-low-score {
+  border: 1px solid #f97316;
+  background: #fff7ed;
+}
+
+.ffm-lecture-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ffm-lec-number {
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.ffm-lec-subject {
+  margin: 6px 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ffm-lec-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.ffm-lec-rating-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ffm-rating-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: #d97706;
+  line-height: 1;
+}
+
+.ffm-status-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-excellent {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-good {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-warning {
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fed7aa;
+}
+
+.badge-critical {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.ffm-needs-review-pill {
+  background: #ea580c;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.ffm-submission-banner {
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #334155;
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.ffm-submission-banner strong {
+  color: #2563eb;
+}
+
+/* Matrix Table */
+.ffm-matrix-wrapper {
+  margin-bottom: 16px;
+}
+
+.ffm-matrix-title {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.ffm-table-scroll {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.ffm-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+.ffm-matrix-table th {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ffm-matrix-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+}
+
+.ffm-matrix-table .tc {
+  text-align: center;
+}
+
+.ffm-matrix-table .param-name {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.ffm-matrix-table .rating-cnt {
+  color: #64748b;
+}
+
+.ffm-matrix-table .param-avg {
+  color: #d97706;
+}
+
+.ffm-toggle-metrics-btn {
+  background: #ffffff;
+  border: 1px solid #ea580c;
+  color: #ea580c;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.ffm-toggle-metrics-btn:hover {
+  background: #ea580c;
+  color: #ffffff;
+}
+
+/* Remarks */
+.ffm-remarks-section {
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.ffm-remarks-title {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 600;
+}
+
+.ffm-remarks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ffm-remark-bubble {
+  background: #ffffff;
+  color: #334155;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-style: italic;
+  border-left: 3px solid #ea580c;
+  border-top: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ffm-empty-lectures {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+  font-size: 14px;
+}
