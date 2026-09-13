@@ -38,7 +38,7 @@ app.set("trust proxy", 1);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-  "https://YOUR-VERCEL-DOMAIN.vercel.app",
+   "https://singaji-feedback-system.vercel.app",
 ];
 
 app.use(

@@ -39,11 +39,11 @@ function AdminDashboard() {
   const fetchTodaySchedules = async () => {
     try {
       const response = await fetch(
-  "${API_URL}/api/schedules/today",
-  {
-    credentials: "include",
-  }
-);
+        `${API_URL}/api/schedules/today`,
+        {
+          credentials: "include",
+        }
+      );
 
       const data = await response.json();
 

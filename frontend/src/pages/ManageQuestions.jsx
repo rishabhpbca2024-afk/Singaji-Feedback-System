@@ -24,7 +24,7 @@ const authUser = JSON.parse(localStorage.getItem("authUser"));
      
 
      const response = await fetch(
-     "${API_URL}/api/questions",
+      `${API_URL}/api/questions`,
      {
     credentials: "include",
   }
@@ -72,7 +72,7 @@ const authUser = JSON.parse(localStorage.getItem("authUser"));
 
   try {
     const response = await fetch(
-      "${API_URL}/api/questions/create",
+       `${API_URL}/api/questions/create`,
       {
         method: "POST",
         credentials: "include",
