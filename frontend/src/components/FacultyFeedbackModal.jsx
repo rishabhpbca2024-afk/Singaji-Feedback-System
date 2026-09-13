@@ -56,13 +56,14 @@ function FacultyFeedbackModal({
         setViewData(null);
 
       const response = await fetch(
-        `/api/feedback/faculty-view?facultyId=${encodeURIComponent(
-         faculty.facultyId
-       )}&date=${selectedDate}`,
-    {
-          credentials: "include",
+  `${API_URL}/api/feedback/faculty-view?facultyId=${encodeURIComponent(
+    faculty.facultyId
+  )}&date=${selectedDate}`,
+  {
+    credentials: "include",
   }
 );
+
 
         const data = await response.json();
 
