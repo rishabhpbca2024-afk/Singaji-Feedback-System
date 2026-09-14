@@ -1,6 +1,6 @@
-import React from 'react';
-import AppRoutes from './routes/AppRoutes.jsx';
-import { AuthProvider } from './context/AuthContext.jsx';
+import React from "react";
+import AppRoutes from "./routes/AppRoutes.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 function App() {
   return (
@@ -11,4 +11,3 @@ function App() {
 }
 
 export default App;
-
