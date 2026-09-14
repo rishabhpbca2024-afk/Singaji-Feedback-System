@@ -24,13 +24,7 @@ const {
   loginLimiter,
 } = require("./middleware/Ratelimiter");
 
-const {
-    startEmailScheduler
-} = require("./services/emailScheduler");
 
-// Baaki middleware, routes, database connection...
-
-startEmailScheduler();
 
 
 const app = express();
