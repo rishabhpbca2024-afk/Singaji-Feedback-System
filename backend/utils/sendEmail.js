@@ -86,8 +86,8 @@ const sendFeedbackLinkEmail = async (
     // ==========================================
 
     const feedbackUrl =
-      `http://localhost:5173/student/feedback` +
-      `?token=${encodeURIComponent(rawToken)}`;
+  `${process.env.FRONTEND_URL}/student/feedback` +
+  `?token=${encodeURIComponent(rawToken)}`;
 
     // ==========================================
     // 5. EMAIL
