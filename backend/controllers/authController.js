@@ -55,7 +55,7 @@ const Login = async (req, res) => {
       const isProduction = process.env.NODE_ENV === "production";
       const encryptedToken = encryptToken(token);
   
-      log("Encrypted Token: " + encryptedToken);
+      console.log("Encrypted Token: " + encryptedToken);
       
 
 res.cookie("accessToken", encryptedToken, {
