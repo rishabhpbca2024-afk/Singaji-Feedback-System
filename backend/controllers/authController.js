@@ -54,9 +54,6 @@ const Login = async (req, res) => {
       const encryptedToken = encryptToken(token);
 
       
-console.log("Original Token Length:", token.length);
-console.log("Encrypted Token Length:", encryptedToken.length);
-console.log("Tokens Same:", token === encryptedToken);
 
 res.cookie("accessToken", encryptedToken, {
   httpOnly: true,
