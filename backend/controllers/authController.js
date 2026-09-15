@@ -49,10 +49,13 @@ const Login = async (req, res) => {
           expiresIn: "1h",
         }
       );
-
+ 
+      console.log("TOken" + token);
+      
       const isProduction = process.env.NODE_ENV === "production";
       const encryptedToken = encryptToken(token);
-
+  
+      log("Encrypted Token: " + encryptedToken);
       
 
 res.cookie("accessToken", encryptedToken, {
