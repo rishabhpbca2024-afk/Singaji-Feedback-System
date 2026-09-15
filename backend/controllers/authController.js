@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 
 const Admin = require("../models/admin");
 const Faculty = require("../models/Faculty");
+const { encryptToken } = require("../utils/tokenEncryption");
 
 const Login = async (req, res) => {
   try {
@@ -50,8 +51,9 @@ const Login = async (req, res) => {
       );
 
       const isProduction = process.env.NODE_ENV === "production";
+      const encryptedToken = encryptToken(token);
 
-res.cookie("accessToken", token, {
+res.cookie("accessToken", encryptedToken, {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
@@ -111,8 +113,9 @@ res.cookie("accessToken", token, {
       );
 
     const isProduction = process.env.NODE_ENV === "production";
+    const encryptedToken = encryptToken(token);
 
-res.cookie("accessToken", token, {
+res.cookie("accessToken", encryptedToken, {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
