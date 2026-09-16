@@ -4,13 +4,15 @@
 
 .sidebar {
   width: 240px;
-
   min-height: calc(100vh - 68px);
-
-  /* Sidebar page scroll ke saath move nahi karega */
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 68px;
+  z-index: 1000;
+  overflow: hidden;
+}
 
+/* 
   flex-shrink: 0;
 
   padding: 20px 12px;
@@ -25,12 +27,12 @@
   flex-direction: column;
 
   /* Sidebar ke andar scrollbar nahi aayega */
-  overflow: hidden;
+  /* overflow: hidden;
 
   transition:
     width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1); */
+} */
 
 
 /* ========================================

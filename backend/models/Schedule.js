@@ -34,6 +34,11 @@ const scheduleSchema = new mongoose.Schema(
     // SLOT 1
     // ==========================================
     slot1: {
+      // Fee for this schedule (optional, null means free)
+      fee: {
+        type: Number,
+        default: null,
+      },
       subject: {
         type: String,
         trim: true,
