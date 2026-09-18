@@ -98,4 +98,8 @@ const feedbackSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for high-performance query execution (L-2)
+feedbackSchema.index({ facultyId: 1, timestamp: -1 });
+feedbackSchema.index({ studentGmail: 1, timestamp: -1 });
+
 module.exports = mongoose.model('Feedback', feedbackSchema);

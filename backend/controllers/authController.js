@@ -7,9 +7,14 @@ const { encryptToken } = require("../utils/tokenEncryption");
 
 const Login = async (req, res) => {
   try {
-    const { gmail, password } = req.body;
+    const { gmail, password } = req.body || {};
 
-    if (!gmail || !password) {
+    if (
+      !gmail ||
+      !password ||
+      typeof gmail !== "string" ||
+      typeof password !== "string"
+    ) {
       return res.status(400).json({
         success: false,
         message: "Gmail and password are required",
@@ -19,7 +24,7 @@ const Login = async (req, res) => {
     const normalizedGmail = gmail.toLowerCase().trim();
 
     // ==========================================
-    // 1. CHECK ADMIN
+    // 1. CHECK ADMIN 
     // ==========================================
 
     const admin = await Admin.findOne({
@@ -49,21 +54,18 @@ const Login = async (req, res) => {
           expiresIn: "1h",
         }
       );
- 
+
       console.log("TOken :" + token);
-      
+
       const isProduction = process.env.NODE_ENV === "production";
       const encryptedToken = encryptToken(token);
-  
-      console.log("Encrypted Token: " + encryptedToken);
-      
 
-res.cookie("accessToken", encryptedToken, {
-  httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "none" : "lax",
-  maxAge: 60 * 60 * 1000,
-});
+      res.cookie("accessToken", encryptedToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 60 * 60 * 1000,
+      });
 
       return res.status(200).json({
         success: true,
@@ -87,7 +89,7 @@ res.cookie("accessToken", encryptedToken, {
     });
 
     if (faculty) {
-      if (!faculty.isActive) {
+      if (faculty.isActive === false) {
         return res.status(403).json({
           success: false,
           message: "Faculty account is inactive",
@@ -117,15 +119,15 @@ res.cookie("accessToken", encryptedToken, {
         }
       );
 
-    const isProduction = process.env.NODE_ENV === "production";
-    const encryptedToken = encryptToken(token);
+      const isProduction = process.env.NODE_ENV === "production";
+      const encryptedToken = encryptToken(token);
 
-res.cookie("accessToken", encryptedToken, {
-  httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "none" : "lax",
-  maxAge: 60 * 60 * 1000,
-});
+      res.cookie("accessToken", encryptedToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 60 * 60 * 1000,
+      });
 
 
       return res.status(200).json({

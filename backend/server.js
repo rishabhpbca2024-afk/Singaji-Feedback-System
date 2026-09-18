@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
+const mongoSanitize = require("express-mongo-sanitize");
 
 dotenv.config();
 
@@ -39,9 +40,13 @@ app.set("trust proxy", 1);
 // ALLOWED FRONTEND ORIGINS
 // ==========================================
 const allowedOrigins = [
+  "https://singaji-feedback-system.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-   "https://singaji-feedback-system.vercel.app",
+  "http://localhost:5174",
+  "http://127.0.0.1:5174",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
 ];
 
 app.use(
@@ -51,7 +56,11 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
+      // Always allow any localhost / 127.0.0.1 port for testing
+      if (
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        allowedOrigins.includes(origin)
+      ) {
         return callback(null, true);
       }
 
@@ -61,11 +70,12 @@ app.use(
   })
 );
 // ==========================================
-// BODY PARSERS
+// BODY PARSERS & SANITIZATION (H-5)
 // ==========================================
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(mongoSanitize());
 app.use("/api", apiLimiter);
 
 // ==========================================
@@ -123,7 +133,7 @@ startEmailScheduler();
 // ==========================================
 
 app.use((error, req, res, next) => {
-  console.error("Server Error:", error.message);
+  console.error("Server Error:", error.stack || error.message);
 
   if (error.message === "Not allowed by CORS") {
     return res.status(403).json({
@@ -132,9 +142,12 @@ app.use((error, req, res, next) => {
     });
   }
 
-  return res.status(500).json({
+  return res.status(error.status || 500).json({
     success: false,
-    message: "Internal server error",
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Internal server error"
+        : error.message || "Internal server error",
   });
 });
 

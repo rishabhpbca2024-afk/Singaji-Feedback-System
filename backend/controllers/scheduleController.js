@@ -1,5 +1,20 @@
 const Schedule = require("../models/Schedule");
 const Students = require("../models/Students");
+const Faculty = require("../models/Faculty");
+
+const normalizeDept = (str) => String(str || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+
+// Helper to enforce department ownership for Faculty role (H-3)
+const verifyFacultyDepartment = async (user, targetDepartment) => {
+  if (!user) return false;
+  if (user.role === "Admin") return true;
+  if (user.role === "Faculty") {
+    const faculty = await Faculty.findById(user.userId).select("section isActive").lean();
+    if (!faculty || faculty.isActive === false) return false;
+    return normalizeDept(faculty.section) === normalizeDept(targetDepartment);
+  }
+  return false;
+};
 
 // =====================================================
 // Get today's start and end according to Indian time
@@ -51,10 +66,24 @@ const createSchedule = async (req, res) => {
       slot3,
     } = req.body;
 
+    let effectiveDepartment = department;
+
+    // Faculty ke case me department automatically login session se set karein
+    if (req.user?.role === "Faculty") {
+      const faculty = await Faculty.findById(req.user.userId).select("section isActive").lean();
+      if (!faculty || faculty.isActive === false) {
+        return res.status(403).json({
+          success: false,
+          message: "Faculty account is inactive or not found.",
+        });
+      }
+      effectiveDepartment = faculty.section;
+    }
+
     // =================================================
     // Basic validation
     // =================================================
-    if (!department || !groups || !className) {
+    if (!effectiveDepartment || !groups || !className) {
       return res.status(400).json({
         success: false,
         message: "Department, groups and class are required",
@@ -72,7 +101,7 @@ const createSchedule = async (req, res) => {
     // Calculate total strength
     // =================================================
     const students = await Students.find({
-      section: department,
+      section: effectiveDepartment,
       level: { $in: groups },
     });
 
@@ -84,7 +113,7 @@ const createSchedule = async (req, res) => {
     const { start, end } = getTodayRange();
 
     const existingSchedule = await Schedule.findOne({
-      department,
+      department: effectiveDepartment,
       date: {
         $gte: start,
         $lt: end,
@@ -179,7 +208,7 @@ const createSchedule = async (req, res) => {
     // Create schedule
     // =================================================
     const schedule = await Schedule.create({
-      department,
+      department: effectiveDepartment,
       groups,
       class: className,
       strength,
@@ -329,7 +358,27 @@ const updateSchedule = async (req, res) => {
       });
     }
 
-    if (!department || !groups || !className) {
+    let effectiveDepartment = department;
+
+    if (req.user?.role === "Faculty") {
+      const faculty = await Faculty.findById(req.user.userId).select("section isActive").lean();
+      if (!faculty || faculty.isActive === false) {
+        return res.status(403).json({
+          success: false,
+          message: "Faculty account is inactive or not found.",
+        });
+      }
+
+      if (normalizeDept(existingSchedule.department) !== normalizeDept(faculty.section)) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only update schedules for your own department",
+        });
+      }
+      effectiveDepartment = faculty.section;
+    }
+
+    if (!effectiveDepartment || !groups || !className) {
       return res.status(400).json({
         success: false,
         message: "Department, groups and class are required",
@@ -344,7 +393,7 @@ const updateSchedule = async (req, res) => {
     }
 
     const students = await Students.find({
-      section: department,
+      section: effectiveDepartment,
       level: { $in: groups },
     });
 
@@ -353,7 +402,7 @@ const updateSchedule = async (req, res) => {
     const updatedSchedule = await Schedule.findByIdAndUpdate(
       id,
       {
-        department,
+        department: effectiveDepartment,
         groups,
         class: className,
 
@@ -400,6 +449,23 @@ const deleteSchedule = async (req, res) => {
         success: false,
         message: "Schedule not found",
       });
+    }
+
+    if (req.user?.role === "Faculty") {
+      const faculty = await Faculty.findById(req.user.userId).select("section isActive").lean();
+      if (!faculty || faculty.isActive === false) {
+        return res.status(403).json({
+          success: false,
+          message: "Faculty account is inactive or not found.",
+        });
+      }
+
+      if (normalizeDept(schedule.department) !== normalizeDept(faculty.section)) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only delete schedules for your own department",
+        });
+      }
     }
 
     // Schedule _id se hi delete hoga

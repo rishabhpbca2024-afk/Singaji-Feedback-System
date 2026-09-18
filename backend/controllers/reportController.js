@@ -289,14 +289,14 @@ const lowScoreAlerts = await Feedback.aggregate([
       overallResult.length > 0
         ? {
             overallRating: Number(
-              overallResult[0].overallRating.toFixed(1)
+              Number(overallResult[0]?.overallRating ?? 0).toFixed(1)
             ),
 
             totalSubmissions:
-              overallResult[0].totalSubmissions,
+              overallResult[0]?.totalSubmissions ?? 0,
 
             lowScoreAlerts:
-              overallResult[0].lowScoreAlerts,
+              overallResult[0]?.lowScoreAlerts ?? 0,
           }
         : {
             overallRating: 0,
@@ -320,20 +320,20 @@ const lowScoreAlerts = await Feedback.aggregate([
       departments: departmentResult.map((department) => ({
         department: department._id,
         overallRating: Number(
-          department.overallRating.toFixed(1)
+          Number(department?.overallRating ?? 0).toFixed(1)
         ),
-        totalSubmissions: department.totalSubmissions,
-        lowScoreAlerts: department.lowScoreAlerts,
+        totalSubmissions: department?.totalSubmissions ?? 0,
+        lowScoreAlerts: department?.lowScoreAlerts ?? 0,
       })),
 
       // Top Rated Faculties
 
       topRatedFaculty: topRatedFaculty.map((faculty) => ({
-        facultyName: faculty._id.facultyName,
-        department: faculty._id.section,
-        subject: faculty._id.subject,
-        rating: Number(faculty.averageRating.toFixed(1)),
-        totalFeedbacks: faculty.totalFeedbacks,
+        facultyName: faculty._id?.facultyName,
+        department: faculty._id?.section,
+        subject: faculty._id?.subject,
+        rating: Number(Number(faculty?.averageRating ?? 0).toFixed(1)),
+        totalFeedbacks: faculty?.totalFeedbacks ?? 0,
       })),
 
       // low Rated Faculties
@@ -342,7 +342,7 @@ const lowScoreAlerts = await Feedback.aggregate([
         facultyName: feedback.facultyName,
         department: feedback.section,
         subject: feedback.subject,
-        rating: Number(feedback.calculatedRating.toFixed(1)),
+        rating: Number(Number(feedback?.calculatedRating ?? 0).toFixed(1)),
         reason: feedback.remarks,
         date: feedback.timestamp,
       })),
@@ -352,7 +352,10 @@ const lowScoreAlerts = await Feedback.aggregate([
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message:
+        process.env.NODE_ENV === 'production'
+          ? 'Failed to fetch overall report'
+          : error.message,
     });
   }
 };

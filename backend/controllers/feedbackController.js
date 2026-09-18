@@ -637,80 +637,101 @@ const {
 } = require("../utils/sendEmail");
 
 
-const sendFeedbackInvite = async (
-  req,
-  res
-) => {
-
+const sendFeedbackInvite = async (req, res) => {
   try {
-
     const {
       studentEmail,
+      department,
+      level,
+      section,
       facultyId,
       facultyName,
       subject,
       time,
       lectureEndTime,
-
-      
-    } = req.body;
-
+    } = req.body || {};
 
     // =====================================================
-    // VALIDATION
+    // VALIDATION (C-2)
     // =====================================================
     if (
       !studentEmail ||
-      !facultyId ||
-      !facultyName ||
+      !department ||
+      !level ||
+      !section ||
       !subject
     ) {
-
       return res.status(400).json({
         success: false,
-        message:
-          "studentEmail, facultyName and subject are required",
+        message: "studentEmail, department, level, section and subject are required",
       });
     }
 
+    // =====================================================
+    // FACULTY ATTRIBUTION SCOPING (C-6)
+    // =====================================================
+    let effectiveFacultyId = facultyId;
+    let effectiveFacultyName = facultyName;
+
+    if (req.user?.role === "Faculty") {
+      const facultyDoc = await Faculty.findById(req.user.userId)
+        .select("facultyId name isActive")
+        .lean();
+
+      if (!facultyDoc || !facultyDoc.isActive) {
+        return res.status(403).json({
+          success: false,
+          message: "Faculty account not found or inactive",
+        });
+      }
+
+      effectiveFacultyId = facultyDoc.facultyId;
+      effectiveFacultyName = facultyDoc.name;
+    } else if (req.user?.role === "Admin") {
+      if (!facultyId || !facultyName) {
+        return res.status(400).json({
+          success: false,
+          message: "facultyId and facultyName are required for Admin invite",
+        });
+      }
+    }
 
     // =====================================================
-    // SEND EMAIL
+    // SEND EMAIL (C-2: EXACT 9 PARAMETERS IN ORDER)
     // =====================================================
-    const result =
-      await sendFeedbackLinkEmail(
-        studentEmail,
-        facultyId,
-        facultyName,
-        subject,
-        time ||
-          "10:00 AM - 11:30 AM",
-           lectureEndTime || ""
-      );
-
-
-    return res.status(200).json({
-
-      success: true,
-
-      message:
-        `Feedback invitation email dispatched to ${studentEmail}`,
-
-      result,
-    });
-
-
-  } catch (error) {
-
-    console.error(
-      "Send feedback invite error:",
-      error
+    const result = await sendFeedbackLinkEmail(
+      studentEmail.trim(),
+      department.trim(),
+      level.trim(),
+      section.trim(),
+      effectiveFacultyId.trim(),
+      effectiveFacultyName.trim(),
+      subject.trim(),
+      time || "10:00 AM - 11:30 AM",
+      lectureEndTime || ""
     );
 
+    if (!result || !result.success) {
+      return res.status(502).json({
+        success: false,
+        message: result?.message || "Failed to send feedback email",
+        error: result?.error || undefined,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Feedback invitation email dispatched to ${studentEmail}`,
+    });
+  } catch (error) {
+    console.error("Send feedback invite error:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message:
+        process.env.NODE_ENV === "production"
+          ? "Failed to process feedback invitation"
+          : error.message,
     });
   }
 };
@@ -1725,21 +1746,8 @@ function getLectureKey(lecture) {
   ].join("|");
 }
 
-function escapeRegex(value) {
-  return value.replace(
-    /[.*+?^${}()|[\]\\]/g,
-    "\\$&"
-  );
-}
-
-
 // =========================================================
-// GET LOGGED-IN FACULTY'S FEEDBACK
-// =========================================================
-// GET /api/feedback/my-feedback?date=2026-09-11
-// =========================================================
-// =========================================================
-// GET LOGGED-IN FACULTY'S FEEDBACK
+// GET FACULTY FEEDBACK (SELF FOR FACULTY, OR BY FACULTYID FOR ADMIN)
 // =========================================================
 // GET /api/feedback/my-feedback?date=2026-09-11
 // =========================================================
@@ -1760,12 +1768,24 @@ const getMyFeedback = async (req, res) => {
     }
 
     // -----------------------------------------------------
-    // 2. GET LOGGED-IN FACULTY
+    // 2. GET TARGET FACULTY (M-2)
     // -----------------------------------------------------
 
-    const faculty = await Faculty.findById(
-      req.user.userId
-    ).lean();
+    let faculty;
+
+    if (req.user?.role === "Admin") {
+      if (!facultyId) {
+        return res.status(400).json({
+          success: false,
+          message: "facultyId query parameter is required for Admin.",
+        });
+      }
+      faculty = await Faculty.findOne({
+        facultyId: String(facultyId).trim(),
+      }).lean();
+    } else {
+      faculty = await Faculty.findById(req.user.userId).lean();
+    }
 
     if (!faculty) {
       return res.status(404).json({
