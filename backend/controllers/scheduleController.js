@@ -1,6 +1,7 @@
 const Schedule = require("../models/Schedule");
 const Students = require("../models/Students");
 const Faculty = require("../models/Faculty");
+const { safeErrorMessage } = require("../utils/errorHandler");
 
 const normalizeDept = (str) => String(str || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 
@@ -240,7 +241,7 @@ const createSchedule = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to create schedule"),
     });
   }
 };
@@ -325,7 +326,7 @@ const getTodaySchedules = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch schedules",
+      message: safeErrorMessage(error, "Failed to fetch schedules"),
     });
   }
 };
@@ -430,7 +431,7 @@ const updateSchedule = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to update schedule"),
     });
   }
 };
@@ -480,7 +481,7 @@ const deleteSchedule = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to delete schedule"),
     });
   }
 };

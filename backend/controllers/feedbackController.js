@@ -5,6 +5,7 @@ const SelectedStudents = require('../models/SeletedStudents');
 const crypto = require("crypto");
 const FeedbackToken = require("../models/FeedbackToken");
 const Faculty = require("../models/Faculty");
+const { safeErrorMessage } = require("../utils/errorHandler");
 
 // SUBMIT FEEDBACK
 
@@ -268,7 +269,7 @@ const studentSection =
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to submit feedback"),
     });
   }
 };
@@ -382,7 +383,7 @@ const verifyFeedbackToken = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to verify feedback token"),
     });
   }
 };
@@ -527,7 +528,7 @@ const getAllFeedback = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to fetch feedback"),
     });
   }
 };
@@ -622,7 +623,7 @@ avgRating = (
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to fetch feedback by faculty"),
     });
   }
 };
@@ -715,7 +716,7 @@ const sendFeedbackInvite = async (req, res) => {
       return res.status(502).json({
         success: false,
         message: result?.message || "Failed to send feedback email",
-        error: result?.error || undefined,
+        ...(process.env.NODE_ENV !== "production" && result?.error ? { error: result.error } : {}),
       });
     }
 
@@ -728,10 +729,7 @@ const sendFeedbackInvite = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to process feedback invitation"
-          : error.message,
+      message: safeErrorMessage(error, "Failed to process feedback invitation"),
     });
   }
 };
@@ -1025,8 +1023,7 @@ const averageScore =
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch faculty history.",
-      error: error.message,
+      message: safeErrorMessage(error, "Failed to fetch faculty history."),
     });
   }
 };
@@ -1629,7 +1626,7 @@ const getFacultyFeedbackView = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to fetch faculty feedback view"),
     });
   }
 };
@@ -2316,8 +2313,7 @@ const getMyFeedback = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to fetch your feedback.",
+      message: safeErrorMessage(error, "Failed to fetch your feedback."),
     });
   }
 };

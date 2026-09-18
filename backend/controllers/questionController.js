@@ -1,4 +1,5 @@
 const Question = require('../models/Question');
+const { safeErrorMessage } = require('../utils/errorHandler');
 
 // @desc    Get all questions
 // @route   GET /api/questions
@@ -48,10 +49,7 @@ const getAllQuestions = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === 'production'
-          ? 'Failed to fetch questions'
-          : error.message,
+      message: safeErrorMessage(error, 'Failed to fetch questions'),
     });
   }
 };
@@ -114,7 +112,7 @@ const createQuestion = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, 'Failed to create question'),
     });
   }
 };
@@ -165,7 +163,7 @@ const updateQuestion = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, 'Failed to update question'),
     });
   }
 };
@@ -216,10 +214,7 @@ const deleteQuestion = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === 'production'
-          ? 'Failed to delete question'
-          : error.message,
+      message: safeErrorMessage(error, 'Failed to delete question'),
     });
   }
 };

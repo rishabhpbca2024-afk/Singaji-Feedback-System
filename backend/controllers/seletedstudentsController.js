@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const SelectedStudents = require("../models/SeletedStudents");
+const { safeErrorMessage } = require("../utils/errorHandler");
 
 const saveSelectedStudents = async (req, res) => {
   const { department, level, students } = req.body || {};
@@ -119,10 +120,7 @@ const saveSelectedStudents = async (req, res) => {
         console.error("Fallback selected students error:", fallbackErr);
         return res.status(500).json({
           success: false,
-          message:
-            process.env.NODE_ENV === "production"
-              ? "Failed to save selected students"
-              : fallbackErr.message,
+          message: safeErrorMessage(fallbackErr, "Failed to save selected students"),
         });
       }
     }
@@ -131,10 +129,7 @@ const saveSelectedStudents = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to save selected students"
-          : error.message,
+      message: safeErrorMessage(error, "Failed to save selected students"),
     });
   }
 };
@@ -165,10 +160,7 @@ const getSelectedStudents = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to fetch selected students"
-          : error.message,
+      message: safeErrorMessage(error, "Failed to fetch selected students"),
     });
   }
 };
