@@ -44,4 +44,8 @@
   .main-content {
     padding: 20px 16px;
   }
-}
+} 
+
+/* Adjust main content margin based on sidebar state */
+.sidebar-open ~ .main-content { margin-left: 240px; }
+.sidebar-collapsed ~ .main-content { margin-left: 68px; }
