@@ -43,6 +43,15 @@ function ManageLectures() {
     new Date().toLocaleDateString("en-CA")
   );
 
+  // ==== Faculty list state ====
+  const [allFaculty, setAllFaculty] = useState([]);
+  const [facultyLoading, setFacultyLoading] = useState(false);
+  const [facultyError, setFacultyError] = useState(null);
+
+  // ==== Faculty filter options ====
+  const [facultyFilter, setFacultyFilter] = useState('all'); // 'all' | 'has' | 'none'
+
+
   // ==========================================
   // FACULTY SEARCH
   // ==========================================
@@ -96,81 +105,195 @@ function ManageLectures() {
     const fetchLectures = async () => {
       try {
         setLoading(true);
-
-        /*
-          IMPORTANT:
-
-          Admin should see ALL departments.
-
-          Therefore we intentionally do NOT send:
-
-          ?department=...
-
-          Faculty Dashboard sends department parameter,
-          but Admin does not.
-        */
-
         const response = await fetch(
           `${API_URL}/api/schedules/today?date=${selectedDate}`,
-          {
-            credentials: "include",
-          }
+          { credentials: "include" }
         );
-
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Failed to fetch schedules"
-          );
-        }
-
-        const schedules =
-          data.schedules || data.data || [];
-
-        // Keep original schedule structure
+        if (!response.ok) throw new Error(data.message || "Failed to fetch schedules");
+        const schedules = data.schedules || data.data || [];
         setLectures(schedules);
       } catch (error) {
-        console.error(
-          "Error fetching schedules:",
-          error
-        );
-
+        console.error("Error fetching schedules:", error);
         setLectures([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchLectures();
   }, [selectedDate]);
 
-  // ==========================================
-  // FILTER BY FACULTY NAME
-  // ==========================================
-
-  const filteredLectures = lectures.filter(
-    (schedule) => {
-      const search = searchFaculty
-        .trim()
-        .toLowerCase();
-
-      // No search
-      if (!search) {
-        return true;
+  // ==== Fetch all faculty once ==== 
+  useEffect(() => {
+    const fetchFaculty = async () => {
+      try {
+        setFacultyLoading(true);
+        const response = await fetch(`${API_URL}/api/faculty`, { credentials: "include" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Failed to fetch faculty");
+        // data.sections is an object keyed by department
+        const flat = [];
+        Object.values(data.sections || {}).forEach(sec => {
+          sec.forEach(fac => flat.push({ name: fac.name, facultyId: fac.facultyId }));
+        });
+        setAllFaculty(flat);
+      } catch (err) {
+        console.error("Error fetching faculty:", err);
+        setFacultyError(err.message);
+      } finally {
+        setFacultyLoading(false);
       }
+    };
+    fetchFaculty();
+  }, []);
 
-      const facultyNames = [
-        schedule.slot1?.facultyName,
-        schedule.slot2?.facultyName,
-        schedule.slot3?.facultyName,
+
+
+  // ==========================================
+  // FILTER BY FACULTY NAME & AVAILABILITY
+  // ==========================================
+
+  const filteredLectures = lectures.filter((schedule) => {
+    const search = searchFaculty.trim().toLowerCase();
+    if (!search) return true;
+
+    const facultyNames = [
+      schedule.slot1?.facultyName,
+      schedule.slot2?.facultyName,
+      schedule.slot3?.facultyName,
+    ];
+
+    return facultyNames.some((name) =>
+      name?.toLowerCase().includes(search)
+    );
+  });
+
+  // ==== Utility: collect all active timetable slots for selected date ====
+  const getAllTimetableSlots = (allSchedules) => {
+    const slotsMap = new Map();
+    allSchedules.forEach((schedule) => {
+      [schedule.slot1, schedule.slot2, schedule.slot3].forEach((slot) => {
+        if (slot && slot.startTime && slot.endTime) {
+          const key = `${slot.startTime.trim()} - ${slot.endTime.trim()}`;
+          if (!slotsMap.has(key)) {
+            slotsMap.set(key, {
+              startTime: slot.startTime.trim(),
+              endTime: slot.endTime.trim(),
+              time: key,
+            });
+          }
+        }
+      });
+    });
+    return Array.from(slotsMap.values());
+  };
+
+  // ==== Combine registered faculty and schedule faculty ====
+  const combinedFacultyList = (() => {
+    const map = new Map();
+    allFaculty.forEach((fac) => {
+      if (fac && fac.name) {
+        map.set(fac.name.trim().toLowerCase(), {
+          name: fac.name.trim(),
+          facultyId: fac.facultyId || `fac-${fac.name}`,
+          section: fac.section || "",
+        });
+      }
+    });
+    lectures.forEach((sch) => {
+      [sch.slot1, sch.slot2, sch.slot3].forEach((slot) => {
+        if (slot && slot.facultyName && slot.facultyName.trim()) {
+          const norm = slot.facultyName.trim().toLowerCase();
+          if (!map.has(norm)) {
+            map.set(norm, {
+              name: slot.facultyName.trim(),
+              facultyId: slot.facultyId || `fac-${slot.facultyName}`,
+              section: sch.department || "",
+            });
+          }
+        }
+      });
+    });
+    return Array.from(map.values());
+  })();
+
+  // ==== Utility: calculate schedule & free slots for a faculty member ====
+  const getFacultyScheduleAndAvailability = (facName, allSchedules) => {
+    const normName = facName.trim().toLowerCase();
+    const scheduledLectures = [];
+    const busySlotKeys = new Set();
+
+    allSchedules.forEach((schedule) => {
+      const slots = [
+        { slotData: schedule.slot1, slotName: "Slot 1" },
+        { slotData: schedule.slot2, slotName: "Slot 2" },
+        { slotData: schedule.slot3, slotName: "Slot 3" },
       ];
 
-      return facultyNames.some((name) =>
-        name?.toLowerCase().includes(search)
+      slots.forEach(({ slotData, slotName }) => {
+        if (
+          slotData &&
+          slotData.facultyName &&
+          slotData.facultyName.trim().toLowerCase().includes(normName)
+        ) {
+          const timeStr =
+            slotData.startTime && slotData.endTime
+              ? `${slotData.startTime.trim()} - ${slotData.endTime.trim()}`
+              : "";
+          if (timeStr) {
+            busySlotKeys.add(timeStr);
+          }
+          scheduledLectures.push({
+            subject: slotData.subject || "N/A",
+            class: schedule.class || "N/A",
+            department: schedule.department || "",
+            startTime: slotData.startTime || "",
+            endTime: slotData.endTime || "",
+            time: timeStr || "N/A",
+            room: slotData.room || "",
+            slotName,
+          });
+        }
+      });
+    });
+
+    const timetableSlots = getAllTimetableSlots(allSchedules);
+    const freeSlots = timetableSlots.filter((ts) => !busySlotKeys.has(ts.time));
+
+    return {
+      scheduledLectures,
+      freeSlots,
+      hasTimetableData: timetableSlots.length > 0,
+    };
+  };
+
+  // ==== Filtered Faculty List for Search / Filter View ====
+  const filteredFacultyList = combinedFacultyList.filter((fac) => {
+    const search = searchFaculty.trim().toLowerCase();
+    const { scheduledLectures } = getFacultyScheduleAndAvailability(
+      fac.name,
+      lectures
+    );
+    const hasLecture = scheduledLectures.length > 0;
+
+    if (search) {
+      const nameMatch = fac.name.toLowerCase().includes(search);
+      const subjectMatch = scheduledLectures.some((l) =>
+        l.subject.toLowerCase().includes(search)
       );
+      const classMatch = scheduledLectures.some((l) =>
+        l.class.toLowerCase().includes(search)
+      );
+      if (!nameMatch && !subjectMatch && !classMatch) {
+        return false;
+      }
     }
-  );
+
+    if (facultyFilter === "has" && !hasLecture) return false;
+    if (facultyFilter === "none" && hasLecture) return false;
+
+    return true;
+  });
 
   // ==========================================
   // GROUP BY DEPARTMENT
@@ -416,6 +539,305 @@ function ManageLectures() {
   };
 
   // ==========================================
+  // HELPER RENDERS
+  // ==========================================
+
+  const renderFacultyView = () => {
+    if (facultyLoading) {
+      return <div className="no-data-box">Loading faculty...</div>;
+    }
+    if (facultyError) {
+      return <div className="no-data-box error">Error: {facultyError}</div>;
+    }
+    if (filteredFacultyList.length === 0) {
+      return (
+        <div className="no-data-box">
+          No faculty members found matching "{searchFaculty}".
+        </div>
+      );
+    }
+    return (
+      <div className="faculty-lecture-list">
+        {filteredFacultyList.map((fac) => {
+          const { scheduledLectures, freeSlots, hasTimetableData } =
+            getFacultyScheduleAndAvailability(fac.name, lectures);
+          const hasLectures = scheduledLectures.length > 0;
+          const isFree = hasTimetableData && freeSlots.length > 0;
+
+          return (
+            <div key={fac.facultyId || fac.name} className="faculty-availability-card">
+              <div className="faculty-card-header">
+                <div className="faculty-info-title">
+                  <h3>{fac.name}</h3>
+                  {fac.section && (
+                    <span className="faculty-dept-badge">{fac.section}</span>
+                  )}
+                </div>
+
+                <div className="faculty-status-badges">
+                  {hasLectures ? (
+                    <span className="status-badge scheduled">
+                      Lecture Scheduled
+                    </span>
+                  ) : (
+                    <span className="status-badge no-lecture">
+                      No Lecture Scheduled
+                    </span>
+                  )}
+
+                  {isFree && (
+                    <span className="status-badge free-badge">
+                      FREE / Available
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Scheduled Lectures Section */}
+              {hasLectures ? (
+                <div className="faculty-card-body">
+                  <h4 className="section-subtitle">Scheduled Lectures</h4>
+                  <div className="scheduled-lectures-grid">
+                    {scheduledLectures.map((lec, idx) => (
+                      <div key={idx} className="lecture-detail-box">
+                        <div className="lecture-detail-row">
+                          <span className="detail-label">Class:</span>
+                          <strong className="detail-value text-highlight">
+                            {lec.class} {lec.department ? `(${lec.department})` : ""}
+                          </strong>
+                        </div>
+                        <div className="lecture-detail-row">
+                          <span className="detail-label">Subject:</span>
+                          <strong className="detail-value">{lec.subject}</strong>
+                        </div>
+                        <div className="lecture-detail-row">
+                          <span className="detail-label">Time:</span>
+                          <span className="detail-value time-tag">{lec.time}</span>
+                        </div>
+                        {lec.room && (
+                          <div className="lecture-detail-row">
+                            <span className="detail-label">Room:</span>
+                            <span className="detail-value">{lec.room}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="no-lecture-message">
+                  <p>This faculty has no lecture scheduled for the selected date ({formatDate(selectedDate)}).</p>
+                </div>
+              )}
+
+              {/* Free Time Slots Section */}
+              {isFree && (
+                <div className="faculty-free-section">
+                  <span className="free-label">Available Time:</span>
+                  <div className="free-slots-list">
+                    {freeSlots.map((fs, idx) => (
+                      <span key={idx} className="free-slot-pill">
+                        {fs.time}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderDepartmentView = () => {
+    if (loading) {
+      return <div className="no-data-box">Loading lectures...</div>;
+    }
+    if (filteredLectures.length === 0) {
+      return (
+        <div className="no-data-box">
+          No lectures found for {formatDate(selectedDate)}.
+        </div>
+      );
+    }
+
+    const activeDepartments = Object.entries(groupedByDepartment).filter(
+      ([, departmentSchedules]) => departmentSchedules.length > 0
+    );
+
+    if (activeDepartments.length === 0) {
+      return (
+        <div className="no-data-box">
+          No lectures found for {formatDate(selectedDate)}.
+        </div>
+      );
+    }
+
+    return activeDepartments.map(([department, departmentSchedules]) => {
+      const firstSchedule = departmentSchedules[0];
+      const slot1Start = firstSchedule?.slot1?.startTime || "--:--";
+      const slot1End = firstSchedule?.slot1?.endTime || "--:--";
+      const lunchStart = firstSchedule?.lunchBreak?.startTime || "--:--";
+      const lunchEnd = firstSchedule?.lunchBreak?.endTime || "--:--";
+      const slot2Start = firstSchedule?.slot2?.startTime || "--:--";
+      const slot2End = firstSchedule?.slot2?.endTime || "--:--";
+      const teaStart = firstSchedule?.teaBreak?.startTime || "--:--";
+      const teaEnd = firstSchedule?.teaBreak?.endTime || "--:--";
+      const slot3Start = firstSchedule?.slot3?.startTime || "--:--";
+      const slot3End = firstSchedule?.slot3?.endTime || "--:--";
+
+      return (
+        <div key={department} className="department-schedule-section">
+          <div className="department-section-header">
+            <div>
+              <h2>{department}</h2>
+              <span>
+                {departmentSchedules.length} schedule
+                {departmentSchedules.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </div>
+
+          <div className="schedule-table-wrapper">
+            <table className="academic-timetable admin-academic-timetable">
+              <thead>
+                <tr>
+                  <th className="th-sno">S.No.</th>
+                  <th className="th-class">Classes</th>
+                  <th className="th-group">Groups Name</th>
+                  <th className="th-strength">Strength</th>
+
+                  <th className="th-slot">
+                    <div className="slot-title">Slot 1</div>
+                    <div className="slot-time">
+                      {slot1Start} to {slot1End}
+                    </div>
+                  </th>
+
+                  <th className="th-break">
+                    <div className="slot-title">Lunch Break</div>
+                    <div className="slot-time">
+                      {lunchStart} to {lunchEnd}
+                    </div>
+                  </th>
+
+                  <th className="th-slot">
+                    <div className="slot-title">Slot 2</div>
+                    <div className="slot-time">
+                      {slot2Start} to {slot2End}
+                    </div>
+                  </th>
+
+                  <th className="th-break">
+                    <div className="slot-title">Tea Break</div>
+                    <div className="slot-time">
+                      {teaStart} to {teaEnd}
+                    </div>
+                  </th>
+
+                  <th className="th-slot">
+                    <div className="slot-title">Slot 3</div>
+                    <div className="slot-time">
+                      {slot3Start} to {slot3End}
+                    </div>
+                  </th>
+
+                  <th className="th-action">Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {departmentSchedules.map((row, index) => (
+                  <tr key={row._id || `${department}-${index}`}>
+                    <td className="td-sno">{index + 1}</td>
+                    <td className="td-class">{row.class || "-"}</td>
+                    <td className="td-group">
+                      {Array.isArray(row.groups)
+                        ? row.groups.join(", ")
+                        : row.groups || "-"}
+                    </td>
+                    <td className="td-strength">{row.strength ?? 0}</td>
+
+                    <LectureCell data={row.slot1} />
+
+                    {index === 0 && (
+                      <td
+                        rowSpan={departmentSchedules.length}
+                        className="break-cell lunch-break"
+                      >
+                        <div className="break-text">LUNCH BREAK</div>
+                      </td>
+                    )}
+
+                    <LectureCell data={row.slot2} />
+
+                    {index === 0 && (
+                      <td
+                        rowSpan={departmentSchedules.length}
+                        className="break-cell tea-break"
+                      >
+                        <div className="break-text">TEA BREAK</div>
+                      </td>
+                    )}
+
+                    <LectureCell data={row.slot3} />
+
+                    <td className="td-action">
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(row)}
+                          title="Edit Schedule"
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            padding: "4px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <FiEdit2 color="#2563eb" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDelete(row)}
+                          title="Delete Schedule"
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            padding: "4px",
+                            display: "inline-flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <FiTrash2 color="#ef4444" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    });
+  };
+
+  // ==========================================
   // RENDER
   // ==========================================
 
@@ -446,53 +868,42 @@ function ManageLectures() {
         <div className="lecture-filters">
 
           {/* SEARCH FACULTY */}
-
           <div className="lecture-search-filter">
-
-            <label htmlFor="faculty-search">
-              Search Faculty
-            </label>
-
+            <label htmlFor="faculty-search">Search Faculty</label>
             <div className="search-input-wrapper">
-
               <FiSearch />
-
               <input
                 id="faculty-search"
                 type="text"
                 placeholder="Search faculty name..."
                 value={searchFaculty}
-                onChange={(e) =>
-                  setSearchFaculty(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setSearchFaculty(e.target.value)}
               />
-
             </div>
-
           </div>
 
-
           {/* SELECT DATE */}
-
           <div className="lecture-date-filter">
-
-            <label htmlFor="lecture-date">
-              Select Date
-            </label>
-
+            <label htmlFor="lecture-date">Select Date</label>
             <input
               id="lecture-date"
               type="date"
               value={selectedDate}
-              onChange={(e) =>
-                setSelectedDate(
-                  e.target.value
-                )
-              }
+              onChange={(e) => setSelectedDate(e.target.value)}
             />
+          </div>
 
+          {/* FACULTY FILTER OPTIONS */}
+          <div className="lecture-faculty-filter">
+            <label>Filter Faculty</label>
+            <select
+              value={facultyFilter}
+              onChange={(e) => setFacultyFilter(e.target.value)}
+            >
+              <option value="all">All Faculty</option>
+              <option value="has">Has Lecture</option>
+              <option value="none">No Lecture</option>
+            </select>
           </div>
 
         </div>
@@ -537,514 +948,9 @@ function ManageLectures() {
       ===================================== */}
 
       <div className="department-schedules-container">
-
-        {loading ? (
-
-          <div className="no-data-box">
-            Loading lectures...
-          </div>
-
-        ) : filteredLectures.length === 0 ? (
-
-          <div className="no-data-box">
-            No lectures found for{" "}
-            {formatDate(selectedDate)}.
-          </div>
-
-        ) : (
-
-          Object.entries(
-            groupedByDepartment
-          )
-
-            /*
-              Empty departments should
-              not be shown.
-            */
-
-            .filter(
-              ([, departmentSchedules]) =>
-                departmentSchedules.length > 0
-            )
-
-            .map(
-              ([
-                department,
-                departmentSchedules,
-              ]) => {
-
-                /*
-                  Each department can have
-                  different timing in future,
-                  so timing is taken from
-                  that department's first
-                  schedule.
-                */
-
-                const firstSchedule =
-                  departmentSchedules[0];
-
-                const slot1Start =
-                  firstSchedule?.slot1
-                    ?.startTime ||
-                  "--:--";
-
-                const slot1End =
-                  firstSchedule?.slot1
-                    ?.endTime ||
-                  "--:--";
-
-                const lunchStart =
-                  firstSchedule
-                    ?.lunchBreak
-                    ?.startTime ||
-                  "--:--";
-
-                const lunchEnd =
-                  firstSchedule
-                    ?.lunchBreak
-                    ?.endTime ||
-                  "--:--";
-
-                const slot2Start =
-                  firstSchedule?.slot2
-                    ?.startTime ||
-                  "--:--";
-
-                const slot2End =
-                  firstSchedule?.slot2
-                    ?.endTime ||
-                  "--:--";
-
-                const teaStart =
-                  firstSchedule
-                    ?.teaBreak
-                    ?.startTime ||
-                  "--:--";
-
-                const teaEnd =
-                  firstSchedule
-                    ?.teaBreak
-                    ?.endTime ||
-                  "--:--";
-
-                const slot3Start =
-                  firstSchedule?.slot3
-                    ?.startTime ||
-                  "--:--";
-
-                const slot3End =
-                  firstSchedule?.slot3
-                    ?.endTime ||
-                  "--:--";
-
-                return (
-                  <div
-                    key={department}
-                    className="department-schedule-section"
-                  >
-
-                    {/* =================================
-                        DEPARTMENT HEADER
-                    ================================= */}
-
-                    <div className="department-section-header">
-
-                      <div>
-
-                        <h2>
-                          {department}
-                        </h2>
-
-                        <span>
-                          {
-                            departmentSchedules.length
-                          }{" "}
-                          schedule
-                          {departmentSchedules.length !==
-                          1
-                            ? "s"
-                            : ""}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-
-                    {/* =================================
-                        TABLE
-                    ================================= */}
-
-                    <div className="schedule-table-wrapper">
-
-                      <table className="academic-timetable admin-academic-timetable">
-
-                        {/* ===========================
-                            TABLE HEADER
-                        =========================== */}
-
-                        <thead>
-
-                          <tr>
-
-                            <th className="th-sno">
-                              S.No.
-                            </th>
-
-                            <th className="th-class">
-                              Classes
-                            </th>
-
-                            <th className="th-group">
-                              Groups Name
-                            </th>
-
-                            <th className="th-strength">
-                              Strength
-                            </th>
-
-
-                            {/* SLOT 1 */}
-
-                            <th className="th-slot">
-
-                              <div className="slot-title">
-                                Slot 1
-                              </div>
-
-                              <div className="slot-time">
-
-                                {slot1Start}
-
-                                {" to "}
-
-                                {slot1End}
-
-                              </div>
-
-                            </th>
-
-
-                            {/* LUNCH */}
-
-                            <th className="th-break">
-
-                              <div className="slot-title">
-                                Lunch Break
-                              </div>
-
-                              <div className="slot-time">
-
-                                {lunchStart}
-
-                                {" to "}
-
-                                {lunchEnd}
-
-                              </div>
-
-                            </th>
-
-
-                            {/* SLOT 2 */}
-
-                            <th className="th-slot">
-
-                              <div className="slot-title">
-                                Slot 2
-                              </div>
-
-                              <div className="slot-time">
-
-                                {slot2Start}
-
-                                {" to "}
-
-                                {slot2End}
-
-                              </div>
-
-                            </th>
-
-
-                            {/* TEA */}
-
-                            <th className="th-break">
-
-                              <div className="slot-title">
-                                Tea Break
-                              </div>
-
-                              <div className="slot-time">
-
-                                {teaStart}
-
-                                {" to "}
-
-                                {teaEnd}
-
-                              </div>
-
-                            </th>
-
-
-                            {/* SLOT 3 */}
-
-                            <th className="th-slot">
-
-                              <div className="slot-title">
-                                Slot 3
-                              </div>
-
-                              <div className="slot-time">
-
-                                {slot3Start}
-
-                                {" to "}
-
-                                {slot3End}
-
-                              </div>
-
-                            </th>
-
-
-                            {/* ACTION */}
-
-                            <th className="th-action">
-                              Action
-                            </th>
-
-                          </tr>
-
-                        </thead>
-
-
-                        {/* ===========================
-                            TABLE BODY
-                        =========================== */}
-
-                        <tbody>
-
-                          {departmentSchedules.map(
-                            (row, index) => (
-
-                              <tr
-                                key={
-                                  row._id ||
-                                  `${department}-${index}`
-                                }
-                              >
-
-                                {/* S.NO */}
-
-                                <td className="td-sno">
-                                  {index + 1}
-                                </td>
-
-
-                                {/* CLASS */}
-
-                                <td className="td-class">
-                                  {row.class ||
-                                    "-"}
-                                </td>
-
-
-                                {/* GROUP */}
-
-                                <td className="td-group">
-
-                                  {Array.isArray(
-                                    row.groups
-                                  )
-                                    ? row.groups.join(
-                                        ", "
-                                      )
-                                    : row.groups ||
-                                      "-"}
-
-                                </td>
-
-
-                                {/* STRENGTH */}
-
-                                <td className="td-strength">
-                                  {row.strength ??
-                                    0}
-                                </td>
-
-
-                                {/* SLOT 1 */}
-
-                                <LectureCell
-                                  data={
-                                    row.slot1
-                                  }
-                                />
-
-
-                                {/* LUNCH BREAK */}
-
-                                {index === 0 && (
-
-                                  <td
-                                    rowSpan={
-                                      departmentSchedules.length
-                                    }
-                                    className="break-cell lunch-break"
-                                  >
-
-                                    <div className="break-text">
-                                      LUNCH BREAK
-                                    </div>
-
-                                  </td>
-
-                                )}
-
-
-                                {/* SLOT 2 */}
-
-                                <LectureCell
-                                  data={
-                                    row.slot2
-                                  }
-                                />
-
-
-                                {/* TEA BREAK */}
-
-                                {index === 0 && (
-
-                                  <td
-                                    rowSpan={
-                                      departmentSchedules.length
-                                    }
-                                    className="break-cell tea-break"
-                                  >
-
-                                    <div className="break-text">
-                                      TEA BREAK
-                                    </div>
-
-                                  </td>
-
-                                )}
-
-
-                                {/* SLOT 3 */}
-
-                                <LectureCell
-                                  data={
-                                    row.slot3
-                                  }
-                                />
-
-
-                                {/* ACTION */}
-
-                                <td className="td-action">
-
-                                  <div
-                                    style={{
-                                      display:
-                                        "flex",
-                                      alignItems:
-                                        "center",
-                                      justifyContent:
-                                        "center",
-                                      gap: "10px",
-                                    }}
-                                  >
-
-                                    {/* EDIT */}
-
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleOpenEdit(
-                                          row
-                                        )
-                                      }
-                                      title="Edit Schedule"
-                                      style={{
-                                        border:
-                                          "none",
-                                        background:
-                                          "transparent",
-                                        cursor:
-                                          "pointer",
-                                        fontSize:
-                                          "16px",
-                                        padding:
-                                          "4px",
-                                        display:
-                                          "inline-flex",
-                                        alignItems:
-                                          "center",
-                                      }}
-                                    >
-
-                                      <FiEdit2 color="#2563eb" />
-
-                                    </button>
-
-
-                                    {/* DELETE */}
-
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleOpenDelete(
-                                          row
-                                        )
-                                      }
-                                      title="Delete Schedule"
-                                      style={{
-                                        border:
-                                          "none",
-                                        background:
-                                          "transparent",
-                                        cursor:
-                                          "pointer",
-                                        fontSize:
-                                          "16px",
-                                        padding:
-                                          "4px",
-                                        display:
-                                          "inline-flex",
-                                        alignItems:
-                                          "center",
-                                      }}
-                                    >
-
-                                      <FiTrash2 color="#ef4444" />
-
-                                    </button>
-
-                                  </div>
-
-                                </td>
-
-                              </tr>
-
-                            )
-                          )}
-
-                        </tbody>
-
-                      </table>
-
-                    </div>
-
-                  </div>
-                );
-              }
-            )
-        )}
-
+        {searchFaculty.trim() || facultyFilter !== 'all'
+          ? renderFacultyView()
+          : renderDepartmentView()}
       </div>
 
 

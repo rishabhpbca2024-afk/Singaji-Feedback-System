@@ -15,7 +15,6 @@ import "./FeedbackForm.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 function FeedbackForm() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   // ==========================================
@@ -46,6 +45,32 @@ function FeedbackForm() {
   // ==========================================
 
   const [step, setStep] = useState("form");
+  const [showCloseMsg, setShowCloseMsg] = useState(false);
+
+  // ==========================================
+  // PREVENT BROWSER BACK BUTTON AFTER SUBMIT
+  // ==========================================
+
+  useEffect(() => {
+    if (step === "success") {
+      window.history.pushState(null, "", window.location.href);
+
+      const handlePopState = () => {
+        window.history.pushState(null, "", window.location.href);
+      };
+
+      window.addEventListener("popstate", handlePopState);
+
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
+  }, [step]);
+
+  const handleCloseTab = () => {
+    window.close();
+    setShowCloseMsg(true);
+  };
 
   // Questions from database
   const [questions, setQuestions] = useState([]);
@@ -89,6 +114,19 @@ function FeedbackForm() {
       try {
         setLoadingFeedback(true);
         setValidationError("");
+
+        // Demo/Test bypass for local testing
+        if (token === "demo" || token === "test") {
+          setFeedbackInfo({
+            facultyName: "Dr. Demo Professor",
+            subject: "Computer Networks & Security",
+            facultyId: "demo123",
+            level: "B.Tech 3rd Year (Section A)",
+            lectureTime: "10:00 AM - 11:30 AM",
+            lectureEndTime: "11:30 AM",
+          });
+          return;
+        }
 
         // Token missing
         if (!token) {
@@ -148,8 +186,16 @@ function FeedbackForm() {
 
         const data = await response.json();
 
-        if (response.ok && data.success) {
-          setQuestions(data.questions || []);
+        if (response.ok && data.success && data.questions && data.questions.length > 0) {
+          setQuestions(data.questions);
+        } else if (token === "demo" || token === "test") {
+          setQuestions([
+            { _id: "q1", text: "How clearly did the faculty explain the concepts during today's lecture?" },
+            { _id: "q2", text: "Was the faculty punctual and well-prepared for the session?" },
+            { _id: "q3", text: "How engaging and interactive was the teaching method?" },
+            { _id: "q4", text: "How effectively were your doubts and queries resolved?" },
+            { _id: "q5", text: "What is your overall rating for today's lecture?" },
+          ]);
         } else {
           console.error(
             "Failed to fetch questions:",
@@ -166,9 +212,19 @@ function FeedbackForm() {
           error
         );
 
-        setValidationError(
-          "Unable to load feedback questions."
-        );
+        if (token === "demo" || token === "test") {
+          setQuestions([
+            { _id: "q1", text: "How clearly did the faculty explain the concepts during today's lecture?" },
+            { _id: "q2", text: "Was the faculty punctual and well-prepared for the session?" },
+            { _id: "q3", text: "How engaging and interactive was the teaching method?" },
+            { _id: "q4", text: "How effectively were your doubts and queries resolved?" },
+            { _id: "q5", text: "What is your overall rating for today's lecture?" },
+          ]);
+        } else {
+          setValidationError(
+            "Unable to load feedback questions."
+          );
+        }
       } finally {
         setLoadingQuestions(false);
       }
@@ -281,6 +337,11 @@ function FeedbackForm() {
       setValidationError(
         "Please select a valid rating for every question."
       );
+      return;
+    }
+
+    if (token === "demo" || token === "test") {
+      setStep("success");
       return;
     }
 
@@ -601,28 +662,26 @@ function FeedbackForm() {
                             key={val}
                             type="button"
                             disabled={submitting}
-                            className={`star-option-btn ${
-                              ratings[index] >= val
-                                ? "active-star"
-                                : ""
-                            }`}
+                            className={`star-option-btn ${ratings[index] >= val
+                              ? "active-star"
+                              : ""
+                              }`}
                             onClick={() =>
                               handleRatingChange(
                                 index,
                                 val
                               )
                             }
-                            title={`${val} - ${
-                              val === 1
-                                ? "Poor"
-                                : val === 2
+                            title={`${val} - ${val === 1
+                              ? "Poor"
+                              : val === 2
                                 ? "Fair"
                                 : val === 3
-                                ? "Average"
-                                : val === 4
-                                ? "Good"
-                                : "Excellent"
-                            }`}
+                                  ? "Average"
+                                  : val === 4
+                                    ? "Good"
+                                    : "Excellent"
+                              }`}
                           >
                             <FaStar />
                           </button>
@@ -631,17 +690,16 @@ function FeedbackForm() {
 
                       <span className="star-rating-label">
                         {ratings[index]
-                          ? `${ratings[index]} / 5 (${
-                              ratings[index] === 1
-                                ? "Poor"
-                                : ratings[index] === 2
-                                ? "Fair"
-                                : ratings[index] === 3
+                          ? `${ratings[index]} / 5 (${ratings[index] === 1
+                            ? "Poor"
+                            : ratings[index] === 2
+                              ? "Fair"
+                              : ratings[index] === 3
                                 ? "Average"
                                 : ratings[index] === 4
-                                ? "Good"
-                                : "Excellent"
-                            })`
+                                  ? "Good"
+                                  : "Excellent"
+                          })`
                           : "Select Rating"}
                       </span>
 
@@ -720,11 +778,17 @@ function FeedbackForm() {
             </p>
 
             <button
-              className="student-card-btn"
-              onClick={() => navigate("/login")}
+              className="student-card-btn close-tab-btn"
+              onClick={handleCloseTab}
             >
-              Back to Home
+              <FiXCircle size={18} /> Close Window
             </button>
+
+            {showCloseMsg && (
+              <p className="close-tab-note">
+                If the tab does not close automatically, please close this browser tab manually.
+              </p>
+            )}
 
           </div>
         )}
