@@ -1,4 +1,5 @@
 const Student = require("../models/Students");
+const { safeErrorMessage } = require("../utils/errorHandler");
 
 const getStudents = async (req, res) => {
   try {
@@ -59,7 +60,7 @@ const getStudents = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, "Failed to fetch students"),
     });
   }
 };

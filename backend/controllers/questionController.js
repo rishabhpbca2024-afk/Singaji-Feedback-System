@@ -1,4 +1,5 @@
 const Question = require('../models/Question');
+const { safeErrorMessage } = require('../utils/errorHandler');
 
 // @desc    Get all questions
 // @route   GET /api/questions
@@ -8,8 +9,32 @@ const getAllQuestions = async (req, res) => {
 
     const filter = {};
 
-    if (category) {
-      filter.category = category;
+    if (category && typeof category === 'string') {
+      filter.category = category.trim();
+    }
+
+    // Default to active questions for public callers (M-1)
+    // If authenticated Admin, allow viewing all questions (active and inactive)
+    let isAdmin = false;
+    try {
+      const encryptedToken = req.cookies?.accessToken;
+      if (encryptedToken) {
+        const { decryptToken } = require("../utils/tokenEncryption");
+        const jwt = require("jsonwebtoken");
+        const token = decryptToken(encryptedToken);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded?.role === "Admin") {
+          isAdmin = true;
+        }
+      }
+    } catch {
+      isAdmin = false;
+    }
+
+    if (!isAdmin) {
+      filter.isActive = true;
+    } else if (typeof req.query.isActive !== "undefined") {
+      filter.isActive = req.query.isActive === "true";
     }
 
     const questions = await Question.find(filter).sort({ order: 1 });
@@ -24,7 +49,7 @@ const getAllQuestions = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, 'Failed to fetch questions'),
     });
   }
 };
@@ -87,7 +112,7 @@ const createQuestion = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, 'Failed to create question'),
     });
   }
 };
@@ -138,7 +163,7 @@ const updateQuestion = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, 'Failed to update question'),
     });
   }
 };
@@ -164,14 +189,19 @@ const deleteQuestion = async (req, res) => {
 
     // 3. Get all remaining questions
     const remainingQuestions = await Question.find().sort({
-      order: 1,
-      createdAt: 1,
-    });
+       order: 1,
+       createdAt: 1,
+     });
 
-    // 4. Re-arrange global order: 1, 2, 3, 4...
-    for (let i = 0; i < remainingQuestions.length; i++) {
-      remainingQuestions[i].order = i + 1;
-      await remainingQuestions[i].save();
+    // 4. Re-arrange global order atomically with bulkWrite (M-4)
+    if (remainingQuestions.length > 0) {
+      const bulkOps = remainingQuestions.map((q, idx) => ({
+        updateOne: {
+          filter: { _id: q._id },
+          update: { $set: { order: idx + 1 } },
+        },
+      }));
+      await Question.bulkWrite(bulkOps);
     }
 
     return res.status(200).json({
@@ -184,7 +214,7 @@ const deleteQuestion = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: safeErrorMessage(error, 'Failed to delete question'),
     });
   }
 };

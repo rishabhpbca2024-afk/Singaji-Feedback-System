@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect,authorize } = require("../middleware/authMiddleware");
+const { protect,authorize,allowOwnFacultyOrAdmin } = require("../middleware/authMiddleware");
 
 
 const {
@@ -32,7 +32,8 @@ router.post('/send-invite', protect, authorize("Admin","Faculty"), sendFeedbackI
 router.get(
   "/faculty-view",
   protect,
-  authorize("Admin"),
+  authorize("Admin", "Faculty"),
+  allowOwnFacultyOrAdmin,
   getFacultyFeedbackView
 );
 
@@ -40,6 +41,7 @@ router.get(
   "/my-feedback",
   protect,
   authorize("Admin","Faculty"),
+  allowOwnFacultyOrAdmin,
   getMyFeedback
 );
 
@@ -47,6 +49,7 @@ router.get(
   "/faculty-history/:facultyId",
   protect,
   authorize("Admin","Faculty"),
+  allowOwnFacultyOrAdmin,
   getFacultyHistory
 );
 
