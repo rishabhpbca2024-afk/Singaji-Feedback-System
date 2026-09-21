@@ -45,12 +45,15 @@ function Login() {
 
       // Login successful
       login({
+        id: data.user.id || data.user._id,
+        facultyId: data.user.facultyId,
         email: data.user.gmail,
         role: data.role,
         name: data.user.name,
         department: data.user.department,
         subjects: data.user.subjects,
         isActive: data.user.isActive,
+        mustChangePassword: data.mustChangePassword ?? data.user?.mustChangePassword ?? false,
       });
 
       // Role ke according dashboard

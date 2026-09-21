@@ -102,4 +102,17 @@ const feedbackSchema = new mongoose.Schema(
 feedbackSchema.index({ facultyId: 1, timestamp: -1 });
 feedbackSchema.index({ studentGmail: 1, timestamp: -1 });
 
-module.exports = mongoose.model('Feedback', feedbackSchema);
+// Compound unique index to prevent duplicate feedback submissions per student/faculty/subject/session
+feedbackSchema.index(
+  {
+    studentGmail: 1,
+    facultyId: 1,
+    subject: 1,
+    lectureEndTime: 1,
+  },
+  {
+    unique: true,
+  }
+);
+
+module.exports = mongoose.model('Feedback', feedbackSchema);

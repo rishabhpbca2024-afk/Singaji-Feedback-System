@@ -18,6 +18,109 @@ const verifyFacultyDepartment = async (user, targetDepartment) => {
 };
 
 // =====================================================
+// Sanitization and Ownership Helpers
+// =====================================================
+const sanitizeBreak = (breakInput, existingBreak, forceExistingTiming = false) => {
+  const b = breakInput || {};
+  let startTime = "";
+  if (forceExistingTiming && existingBreak?.startTime !== undefined) {
+    startTime = existingBreak.startTime;
+  } else if (typeof b.startTime === "string" && b.startTime.trim() !== "") {
+    startTime = b.startTime.trim();
+  } else if (existingBreak?.startTime !== undefined) {
+    startTime = existingBreak.startTime;
+  }
+
+  let endTime = "";
+  if (forceExistingTiming && existingBreak?.endTime !== undefined) {
+    endTime = existingBreak.endTime;
+  } else if (typeof b.endTime === "string" && b.endTime.trim() !== "") {
+    endTime = b.endTime.trim();
+  } else if (existingBreak?.endTime !== undefined) {
+    endTime = existingBreak.endTime;
+  }
+
+  return { startTime, endTime };
+};
+
+const sanitizeAndValidateSlot = async (
+  slotInput,
+  existingScheduleSlot,
+  forceExistingTiming,
+  existingFeedbackEmailSent,
+  user,
+  effectiveDepartment,
+  isSlot1 = false,
+  existingFee = null
+) => {
+  const slot = slotInput || {};
+  const subject = typeof slot.subject === "string" ? slot.subject.trim() : "";
+  const rawFacultyId = typeof slot.facultyId === "string" ? slot.facultyId.trim() : "";
+
+  let facultyId = "";
+  let facultyName = "";
+
+  if (rawFacultyId) {
+    const facultyDoc = await Faculty.findOne({ facultyId: rawFacultyId })
+      .select("facultyId name section isActive")
+      .lean();
+
+    if (!facultyDoc || facultyDoc.isActive === false) {
+      const err = new Error(`Faculty '${rawFacultyId}' not found or inactive`);
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (user.role === "Faculty") {
+      const isAuthorized = await verifyFacultyDepartment(user, facultyDoc.section);
+      if (!isAuthorized) {
+        const err = new Error(`You are not authorized to assign faculty '${rawFacultyId}' from department '${facultyDoc.section}'`);
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+
+    facultyId = facultyDoc.facultyId;
+    facultyName = facultyDoc.name;
+  } else {
+    facultyName = typeof slot.facultyName === "string" ? slot.facultyName.trim() : "";
+  }
+
+  let startTime = "";
+  if (forceExistingTiming && existingScheduleSlot?.startTime !== undefined) {
+    startTime = existingScheduleSlot.startTime;
+  } else if (typeof slot.startTime === "string" && slot.startTime.trim() !== "") {
+    startTime = slot.startTime.trim();
+  } else if (existingScheduleSlot?.startTime !== undefined) {
+    startTime = existingScheduleSlot.startTime;
+  }
+
+  let endTime = "";
+  if (forceExistingTiming && existingScheduleSlot?.endTime !== undefined) {
+    endTime = existingScheduleSlot.endTime;
+  } else if (typeof slot.endTime === "string" && slot.endTime.trim() !== "") {
+    endTime = slot.endTime.trim();
+  } else if (existingScheduleSlot?.endTime !== undefined) {
+    endTime = existingScheduleSlot.endTime;
+  }
+
+  const sanitized = {
+    subject,
+    facultyId,
+    facultyName,
+    startTime,
+    endTime,
+    feedbackEmailSent: existingFeedbackEmailSent !== undefined ? Boolean(existingFeedbackEmailSent) : false,
+  };
+
+  if (isSlot1) {
+    sanitized.fee = typeof slot.fee === "number" ? slot.fee : existingFee;
+  }
+
+  return sanitized;
+};
+
+// =====================================================
 // Get today's start and end according to Indian time
 // =====================================================
 const getTodayRange = () => {
@@ -121,60 +224,9 @@ const createSchedule = async (req, res) => {
       },
     }).sort({ date: 1 });
 
-    // =================================================
-    // If today's schedule already exists
-    // then reuse its timing
-    // =================================================
-    let finalSlot1;
-    let finalLunchBreak;
-    let finalSlot2;
-    let finalTeaBreak;
-    let finalSlot3;
+    const reuseTiming = Boolean(existingSchedule);
 
-    if (existingSchedule) {
-      // -----------------------------------------------
-      // Timing already exists for today
-      // -----------------------------------------------
-
-      finalSlot1 = {
-        subject: slot1?.subject || "",
-        facultyId: slot1?.facultyId || "",
-        facultyName: slot1?.facultyName || "",
-        startTime: existingSchedule.slot1?.startTime,
-        endTime: existingSchedule.slot1?.endTime,
-      };
-
-      finalLunchBreak = {
-        startTime: existingSchedule.lunchBreak?.startTime,
-        endTime: existingSchedule.lunchBreak?.endTime,
-      };
-
-      finalSlot2 = {
-        subject: slot2?.subject || "",
-        facultyId: slot2?.facultyId || "",
-        facultyName: slot2?.facultyName || "",
-        startTime: existingSchedule.slot2?.startTime,
-        endTime: existingSchedule.slot2?.endTime,
-      };
-
-      finalTeaBreak = {
-        startTime: existingSchedule.teaBreak?.startTime,
-        endTime: existingSchedule.teaBreak?.endTime,
-      };
-
-      finalSlot3 = {
-        subject: slot3?.subject || "",
-        facultyId: slot3?.facultyId || "",
-        facultyName: slot3?.facultyName || "",
-        startTime: existingSchedule.slot3?.startTime,
-        endTime: existingSchedule.slot3?.endTime,
-      };
-    } else {
-      // -----------------------------------------------
-      // First schedule of the day
-      // Timing is required
-      // -----------------------------------------------
-
+    if (!reuseTiming) {
       if (
         !slot1?.startTime ||
         !slot1?.endTime ||
@@ -193,17 +245,52 @@ const createSchedule = async (req, res) => {
             "For the first schedule of the day, all timings are required",
         });
       }
-
-      finalSlot1 = slot1;
-
-      finalLunchBreak = lunchBreak;
-
-      finalSlot2 = slot2;
-
-      finalTeaBreak = teaBreak;
-
-      finalSlot3 = slot3;
     }
+
+    const finalSlot1 = await sanitizeAndValidateSlot(
+      slot1,
+      existingSchedule?.slot1,
+      reuseTiming,
+      false, // feedbackEmailSent is always false on creation
+      req.user,
+      effectiveDepartment,
+      true,
+      null
+    );
+
+    const finalLunchBreak = sanitizeBreak(
+      lunchBreak,
+      existingSchedule?.lunchBreak,
+      reuseTiming
+    );
+
+    const finalSlot2 = await sanitizeAndValidateSlot(
+      slot2,
+      existingSchedule?.slot2,
+      reuseTiming,
+      false,
+      req.user,
+      effectiveDepartment,
+      false,
+      null
+    );
+
+    const finalTeaBreak = sanitizeBreak(
+      teaBreak,
+      existingSchedule?.teaBreak,
+      reuseTiming
+    );
+
+    const finalSlot3 = await sanitizeAndValidateSlot(
+      slot3,
+      existingSchedule?.slot3,
+      reuseTiming,
+      false,
+      req.user,
+      effectiveDepartment,
+      false,
+      null
+    );
 
     // =================================================
     // Create schedule
@@ -213,15 +300,10 @@ const createSchedule = async (req, res) => {
       groups,
       class: className,
       strength,
-
       slot1: finalSlot1,
-
       lunchBreak: finalLunchBreak,
-
       slot2: finalSlot2,
-
       teaBreak: finalTeaBreak,
-
       slot3: finalSlot3,
     });
 
@@ -233,11 +315,17 @@ const createSchedule = async (req, res) => {
       message: existingSchedule
         ? "Schedule created using today's existing timing"
         : "First schedule of the day created successfully",
-
       schedule,
     });
   } catch (error) {
     console.error("Create schedule error:", error);
+
+    if (error.statusCode && error.statusCode < 500) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
@@ -304,9 +392,30 @@ const getTodaySchedules = async (req, res) => {
     };
 
     // =================================================
-    // Department filter
+    // Department ownership & filter
     // =================================================
-    if (req.query.department) {
+    if (req.user?.role === "Faculty") {
+      const faculty = await Faculty.findById(req.user.userId).select("section isActive").lean();
+      if (!faculty || faculty.isActive === false) {
+        return res.status(403).json({
+          success: false,
+          message: "Faculty account is inactive or not found.",
+        });
+      }
+
+      if (req.query.department) {
+        const isAuthorized = await verifyFacultyDepartment(req.user, req.query.department);
+        if (!isAuthorized) {
+          return res.status(403).json({
+            success: false,
+            message: "You can only access schedules for your own department",
+          });
+        }
+      }
+
+      // Faculty queries are restricted to their own department
+      filter.department = faculty.section;
+    } else if (req.query.department) {
       filter.department = req.query.department;
     }
 
@@ -400,20 +509,63 @@ const updateSchedule = async (req, res) => {
 
     const strength = students.length;
 
+    const finalSlot1 = await sanitizeAndValidateSlot(
+      slot1,
+      existingSchedule.slot1,
+      false, // allow updated timings if provided, else keep existing
+      existingSchedule.slot1?.feedbackEmailSent, // preserve existing feedbackEmailSent
+      req.user,
+      effectiveDepartment,
+      true,
+      existingSchedule.slot1?.fee ?? null
+    );
+
+    const finalLunchBreak = sanitizeBreak(
+      lunchBreak,
+      existingSchedule.lunchBreak,
+      false
+    );
+
+    const finalSlot2 = await sanitizeAndValidateSlot(
+      slot2,
+      existingSchedule.slot2,
+      false,
+      existingSchedule.slot2?.feedbackEmailSent,
+      req.user,
+      effectiveDepartment,
+      false,
+      null
+    );
+
+    const finalTeaBreak = sanitizeBreak(
+      teaBreak,
+      existingSchedule.teaBreak,
+      false
+    );
+
+    const finalSlot3 = await sanitizeAndValidateSlot(
+      slot3,
+      existingSchedule.slot3,
+      false,
+      existingSchedule.slot3?.feedbackEmailSent,
+      req.user,
+      effectiveDepartment,
+      false,
+      null
+    );
+
     const updatedSchedule = await Schedule.findByIdAndUpdate(
       id,
       {
         department: effectiveDepartment,
         groups,
         class: className,
-
         strength,
-
-        slot1,
-        lunchBreak,
-        slot2,
-        teaBreak,
-        slot3,
+        slot1: finalSlot1,
+        lunchBreak: finalLunchBreak,
+        slot2: finalSlot2,
+        teaBreak: finalTeaBreak,
+        slot3: finalSlot3,
       },
       {
         new: true,
@@ -428,6 +580,13 @@ const updateSchedule = async (req, res) => {
     });
   } catch (error) {
     console.error("Update schedule error:", error);
+
+    if (error.statusCode && error.statusCode < 500) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
@@ -453,15 +612,8 @@ const deleteSchedule = async (req, res) => {
     }
 
     if (req.user?.role === "Faculty") {
-      const faculty = await Faculty.findById(req.user.userId).select("section isActive").lean();
-      if (!faculty || faculty.isActive === false) {
-        return res.status(403).json({
-          success: false,
-          message: "Faculty account is inactive or not found.",
-        });
-      }
-
-      if (normalizeDept(schedule.department) !== normalizeDept(faculty.section)) {
+      const isAuthorized = await verifyFacultyDepartment(req.user, schedule.department);
+      if (!isAuthorized) {
         return res.status(403).json({
           success: false,
           message: "You can only delete schedules for your own department",

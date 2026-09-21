@@ -156,3 +156,51 @@
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
+
+/* Must Change Password Banner */
+.faculty-must-change-banner {
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-left: 6px solid #d97706;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.08);
+  flex-wrap: wrap;
+}
+
+.faculty-must-change-banner .banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #92400e;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.faculty-must-change-banner .banner-icon {
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.btn-banner-change {
+  background: #d97706;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 5px rgba(217, 119, 6, 0.2);
+}
+
+.btn-banner-change:hover {
+  background: #b45309;
+}

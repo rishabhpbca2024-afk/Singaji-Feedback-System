@@ -108,6 +108,28 @@
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
 }
 
+.navbar-change-pwd {
+  border: 1.5px solid #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.navbar-change-pwd:hover {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #ea580c;
+}
+
 @media (max-width: 768px) {
   .navbar {
     padding: 0 16px;

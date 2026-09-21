@@ -8,29 +8,50 @@ const {
 
 const protect = async (req, res, next) => {
   try {
-    // 1. Cookie se encrypted token read karna
+    let token = null;
+
+    // 1. Read token from encrypted cookie or Authorization header
     const encryptedToken = req.cookies?.accessToken;
 
-    if (!encryptedToken) {
+    if (encryptedToken) {
+      try {
+        token = decryptToken(encryptedToken);
+      } catch (err) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid session cookie.",
+        });
+      }
+    } else if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      const headerToken = req.headers.authorization.split(" ")[1];
+      // Support both encrypted token and raw JWT in Authorization header
+      try {
+        token = decryptToken(headerToken);
+      } catch (e) {
+        token = headerToken;
+      }
+    }
+
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: "Not authorized. Please login first.",
       });
     }
 
-    // 2. Encrypted token ko decrypt karna
-    const token = decryptToken(encryptedToken);
-
-    // 3. Decrypted JWT ko verify karna
+    // 2. Decrypted JWT ko verify karna
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET
     );
 
-    // 4. DB Re-check for existence and isActive (H-4)
+    // 3. DB Re-check for existence, isActive, passwordChangedAt and mustChangePassword
     if (decoded.role === "Faculty") {
       const faculty = await Faculty.findById(decoded.userId)
-        .select("isActive facultyId section")
+        .select("isActive facultyId section mustChangePassword passwordChangedAt")
         .lean();
 
       if (!faculty || faculty.isActive === false) {
@@ -39,6 +60,35 @@ const protect = async (req, res, next) => {
           message: "Faculty account is inactive or does not exist.",
         });
       }
+
+      // Invalidate existing sessions/tokens after a password reset or change
+      if (faculty.passwordChangedAt) {
+        const changedTimestamp = Math.floor(
+          new Date(faculty.passwordChangedAt).getTime() / 1000
+        );
+        if (decoded.iat && decoded.iat < changedTimestamp) {
+          return res.status(401).json({
+            success: false,
+            message: "Password was recently changed. Please login again.",
+          });
+        }
+      }
+
+      // If mustChangePassword === true, do not allow normal access to protected faculty functionality.
+      // Only permit calling the change-password endpoint.
+      const isChangePasswordEndpoint =
+        (req.baseUrl === "/api/faculty" || req.originalUrl?.startsWith("/api/faculty")) &&
+        (req.path === "/change-password" || req.path === "/change-password/");
+
+      if (faculty.mustChangePassword && !isChangePasswordEndpoint) {
+        return res.status(403).json({
+          success: false,
+          mustChangePassword: true,
+          message: "Please change your password before continuing.",
+        });
+      }
+
+      decoded.mustChangePassword = faculty.mustChangePassword;
     } else if (decoded.role === "Admin") {
       const admin = await Admin.findById(decoded.userId)
         .select("_id")
@@ -57,10 +107,10 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // 5. User data request ke andar store karna
+    // 4. User data request ke andar store karna
     req.user = decoded;
 
-    // 6. Next middleware/controller par jaana
+    // 5. Next middleware/controller par jaana
     next();
   } catch (error) {
     console.error("Authentication error:", error.message);

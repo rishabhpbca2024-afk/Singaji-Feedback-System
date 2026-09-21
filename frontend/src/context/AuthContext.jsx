@@ -23,10 +23,30 @@ export function AuthProvider({ children }) {
     localStorage.setItem('authUser', JSON.stringify(userData));
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('authUser');
+  const logout = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "";
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem("authUser");
+      localStorage.removeItem("token");
+    }
+  };
+
+
+  const updateUser = (updatedFields) => {
+    setUser((prev) => {
+      const updated = { ...prev, ...updatedFields };
+      localStorage.setItem('authUser', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const value = {
@@ -34,6 +54,7 @@ export function AuthProvider({ children }) {
     isAuthenticated,
     login,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

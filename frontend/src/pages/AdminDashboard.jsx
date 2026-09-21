@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaGraduationCap, FaStar } from "react-icons/fa";
-import { FiAlertTriangle, FiCheckCircle } from "react-icons/fi";
+import { FiAlertTriangle, FiCheckCircle, FiKey } from "react-icons/fi";
+import AdminChangePasswordModal from "../components/AdminChangePasswordModal.jsx";
 const API_URL = import.meta.env.VITE_API_URL;
 
 import "./AdminDashboard.css";
@@ -18,6 +19,7 @@ function StarRating({ value }) {
 }
 
 function AdminDashboard() {
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [recentFeedback, setRecentFeedback] = useState([]);
   const [lowScoreFeedback, setLowScoreFeedback] = useState([]);
 
@@ -203,8 +205,20 @@ useEffect(() => {
 
       {/* Dashboard Header */}
       <div className="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <p>Overview of today's academic and feedback activity</p>
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>Overview of today's academic and feedback activity</p>
+        </div>
+
+        <button
+          type="button"
+          className="btn-admin-change-pwd"
+          onClick={() => setIsPasswordModalOpen(true)}
+          title="Change Admin Password"
+        >
+          <FiKey size={15} />
+          <span>Change Password</span>
+        </button>
       </div>
 
 
@@ -353,6 +367,11 @@ useEffect(() => {
         </div>
 
       </div>
+
+      <AdminChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
 
     </div>
   );

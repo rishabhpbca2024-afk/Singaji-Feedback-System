@@ -28,6 +28,26 @@ const facultySchema = new mongoose.Schema(
       required: true,
     },
 
+    mustChangePassword: {
+      type: Boolean,
+      default: true,
+    },
+
+    passwordChangedAt: {
+      type: Date,
+      default: null,
+    },
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+
     section: {
       type: String,
       required: true,

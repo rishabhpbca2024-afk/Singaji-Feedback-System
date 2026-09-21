@@ -34,6 +34,31 @@ const submitFeedback = async (req, res) => {
       });
     }
 
+    // Validate metrics before consuming token
+    const requiredMetrics = [
+      "Explanation",
+      "Punctuality",
+      "Engagement",
+      "Resolution",
+      "Overall",
+    ];
+
+    for (const metric of requiredMetrics) {
+      const value = metrics[metric];
+
+      if (
+        value === undefined ||
+        value === null ||
+        Number(value) < 1 ||
+        Number(value) > 5
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid or missing rating for ${metric}.`,
+        });
+      }
+    }
+
     // =====================================================
     // 2. HASH TOKEN
     // =====================================================
@@ -44,36 +69,44 @@ const submitFeedback = async (req, res) => {
       .digest("hex");
 
     // =====================================================
-    // 3. FIND TOKEN
+    // 3. ATOMICALLY FIND AND CONSUME TOKEN (Fix 1)
     // =====================================================
 
-    const feedbackToken = await FeedbackToken.findOne({
-      tokenHash,
-    });
+    const feedbackToken = await FeedbackToken.findOneAndUpdate(
+      {
+        tokenHash,
+        usedAt: null,
+        expiresAt: { $gt: new Date() },
+      },
+      {
+        $set: {
+          usedAt: new Date(),
+        },
+      },
+      {
+        new: true,
+      }
+    );
 
     if (!feedbackToken) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid feedback link.",
+      const existingToken = await FeedbackToken.findOne({
+        tokenHash,
       });
-    }
 
-    // =====================================================
-    // 4. CHECK TOKEN EXPIRY
-    // =====================================================
+      if (!existingToken) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid feedback link.",
+        });
+      }
 
-    if (feedbackToken.expiresAt < new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: "This feedback link has expired.",
-      });
-    }
+      if (existingToken.expiresAt < new Date()) {
+        return res.status(400).json({
+          success: false,
+          message: "This feedback link has expired.",
+        });
+      }
 
-    // =====================================================
-    // 5. CHECK TOKEN ALREADY USED
-    // =====================================================
-
-    if (feedbackToken.usedAt) {
       return res.status(400).json({
         success: false,
         message: "Feedback has already been submitted using this link.",
@@ -81,7 +114,7 @@ const submitFeedback = async (req, res) => {
     }
 
     // =====================================================
-    // 6. GET TRUSTED DATA FROM TOKEN
+    // 4. GET TRUSTED DATA FROM TOKEN
     // =====================================================
 
     const normalizedGmail =
@@ -105,7 +138,7 @@ const submitFeedback = async (req, res) => {
       feedbackToken.lectureEndTime.trim();
 
     // =====================================================
-    // 7. VERIFY STUDENT IS STILL SELECTED
+    // 5. VERIFY STUDENT IS STILL SELECTED
     // =====================================================
 
     const selectedStudent =
@@ -114,6 +147,11 @@ const submitFeedback = async (req, res) => {
       });
 
     if (!selectedStudent) {
+      // Revert token consumption if student is not authorized
+      await FeedbackToken.findByIdAndUpdate(feedbackToken._id, {
+        $set: { usedAt: null },
+      });
+
       return res.status(400).json({
         success: false,
         message: "Student is not authorized for this feedback.",
@@ -121,23 +159,21 @@ const submitFeedback = async (req, res) => {
     }
 
     // =====================================================
-    // 8. GET LEVEL + SECTION
+    // 6. GET LEVEL + SECTION
     // =====================================================
 
- 
+    const department =
+      (feedbackToken.department || "").trim();
 
-const department =
-  (feedbackToken.department || "").trim();
+    const studentLevel =
+      feedbackToken.level ||
+      selectedStudent.level ||
+      "";
 
-const studentLevel =
-  feedbackToken.level ||
-  selectedStudent.level ||
-  "";
-
-const studentSection =
-  feedbackToken.section ||
-  selectedStudent.section ||
-  "";
+    const studentSection =
+      feedbackToken.section ||
+      selectedStudent.section ||
+      "";
 
     console.log("Student Gmail:", normalizedGmail);
     console.log("Student Level:", studentLevel);
@@ -146,7 +182,7 @@ const studentSection =
     console.log("Subject:", subject);
 
     // =====================================================
-    // 9. CHECK DUPLICATE FEEDBACK
+    // 7. CHECK DUPLICATE FEEDBACK
     // =====================================================
 
     const existingFeedback =
@@ -167,83 +203,51 @@ const studentSection =
     }
 
     // =====================================================
-    // 10. VALIDATE METRICS
+    // 8. SAVE FEEDBACK
     // =====================================================
 
-    const requiredMetrics = [
-      "Explanation",
-      "Punctuality",
-      "Engagement",
-      "Resolution",
-      "Overall",
-    ];
-
-    for (const metric of requiredMetrics) {
-      const value = metrics[metric];
-
-      if (
-        value === undefined ||
-        value === null ||
-        Number(value) < 1 ||
-        Number(value) > 5
-      ) {
+    let feedback;
+    try {
+      feedback = await Feedback.create({
+        studentGmail: normalizedGmail,
+        level: studentLevel,
+        // IMPORTANT: Existing reporting code treats feedback.section as department.
+        section: department,
+        facultyId,
+        facultyName,
+        subject,
+        lectureTime,
+        lectureEndTime,
+        metrics: {
+          Explanation: Number(metrics.Explanation),
+          Punctuality: Number(metrics.Punctuality),
+          Engagement: Number(metrics.Engagement),
+          Resolution: Number(metrics.Resolution),
+          Overall: Number(metrics.Overall),
+        },
+        remarks: remarks
+          ? remarks.trim()
+          : "",
+      });
+    } catch (createErr) {
+      if (createErr.code === 11000) {
         return res.status(400).json({
           success: false,
           message:
-            `Invalid or missing rating for ${metric}.`,
+            "You have already submitted feedback for this lecture.",
         });
       }
+
+      // Rollback token consumption if creation fails unexpectedly
+      await FeedbackToken.findByIdAndUpdate(feedbackToken._id, {
+        $set: { usedAt: null },
+      });
+
+      throw createErr;
     }
 
     // =====================================================
-    // 11. SAVE FEEDBACK
-    // =====================================================
-
-    const feedback = await Feedback.create({
-  studentGmail: normalizedGmail,
-
-  level: studentLevel,
-
-  // IMPORTANT:
-  // Existing reporting code treats feedback.section
-  // as department.
-  section: department,
-
-  facultyId,
-
-  facultyName,
-
-  subject,
-
-  lectureTime,
-
-  lectureEndTime,
-
-  metrics: {
-    Explanation: Number(metrics.Explanation),
-    Punctuality: Number(metrics.Punctuality),
-    Engagement: Number(metrics.Engagement),
-    Resolution: Number(metrics.Resolution),
-    Overall: Number(metrics.Overall),
-  },
-
-  remarks: remarks
-    ? remarks.trim()
-    : "",
-});
-    // =====================================================
-    // 12. MARK TOKEN AS USED
-    // =====================================================
-
-    await FeedbackToken.findByIdAndUpdate(
-      feedbackToken._id,
-      {
-        usedAt: new Date(),
-      }
-    );
-
-    // =====================================================
-    // 13. SUCCESS
+    // 9. SUCCESS
     // =====================================================
 
     console.log(
@@ -260,6 +264,7 @@ const studentSection =
       message: "Feedback submitted successfully.",
       feedback,
     });
+
 
   } catch (error) {
     console.error(
@@ -657,6 +662,7 @@ const sendFeedbackInvite = async (req, res) => {
     // =====================================================
     if (
       !studentEmail ||
+      typeof studentEmail !== "string" ||
       !department ||
       !level ||
       !section ||
@@ -665,6 +671,39 @@ const sendFeedbackInvite = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "studentEmail, department, level, section and subject are required",
+      });
+    }
+
+    // Reject any CR/LF characters (Email Header Injection prevention)
+    if (/[\r\n]/.test(studentEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email address",
+      });
+    }
+
+    // Normalize and validate email format
+    const email = studentEmail.trim().toLowerCase();
+
+    const EMAIL_RE = /^[^\s@\r\n]+@[^\s@\r\n]+\.[^\s@\r\n]+$/;
+
+    if (!EMAIL_RE.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email address",
+      });
+    }
+
+
+    // Verify student exists in SelectedStudents collection
+    const studentExists = await SelectedStudents.exists({
+      gmail: email,
+    });
+
+    if (!studentExists) {
+      return res.status(400).json({
+        success: false,
+        message: "Student not selected",
       });
     }
 
@@ -701,7 +740,7 @@ const sendFeedbackInvite = async (req, res) => {
     // SEND EMAIL (C-2: EXACT 9 PARAMETERS IN ORDER)
     // =====================================================
     const result = await sendFeedbackLinkEmail(
-      studentEmail.trim(),
+      email,
       department.trim(),
       level.trim(),
       section.trim(),
@@ -722,8 +761,9 @@ const sendFeedbackInvite = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Feedback invitation email dispatched to ${studentEmail}`,
+      message: `Feedback invitation email dispatched to ${email}`,
     });
+
   } catch (error) {
     console.error("Send feedback invite error:", error);
 

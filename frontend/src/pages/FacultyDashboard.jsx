@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiPlus, FiShare2, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiShare2, FiEdit2, FiTrash2, FiLock, FiAlertTriangle } from "react-icons/fi";
 import useAuth from "../hooks/useAuth.js";
 import ssecLogo from "../assets/rename.png";
 import "./FacultyDashboard.css";
 import Modal from "../components/Modal.jsx";
+import ChangePasswordModal from "../components/ChangePasswordModal.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -37,6 +38,14 @@ function FacultyDashboard() {
   const [isEditScheduleOpen, setIsEditScheduleOpen] = useState(false);
   const [editingScheduleId, setEditingScheduleId] = useState(null);
   const [hasTodaySchedule, setHasTodaySchedule] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  // Automatically prompt faculty to change password on first login
+  useEffect(() => {
+    if (user?.mustChangePassword) {
+      setIsChangePasswordOpen(true);
+    }
+  }, [user?.mustChangePassword]);
 
   const [scheduleTiming, setScheduleTiming] = useState({
     slot1: { startTime: "", endTime: "" },
@@ -603,6 +612,24 @@ function FacultyDashboard() {
       <div className="faculty-body">
         <main className="faculty-main-content">
 
+          {user?.mustChangePassword && (
+            <div className="faculty-must-change-banner">
+              <div className="banner-left">
+                <FiAlertTriangle className="banner-icon" size={20} />
+                <div>
+                  <strong>Security Notice:</strong> You are currently signed in with the institutional temporary password. You must change your password to secure your account.
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-banner-change"
+                onClick={() => setIsChangePasswordOpen(true)}
+              >
+                Change Password Now
+              </button>
+            </div>
+          )}
+
           <div className="faculty-page-header">
             <div>
               <h1>Faculty Dashboard</h1>
@@ -621,6 +648,29 @@ function FacultyDashboard() {
                 flexWrap: "wrap",
               }}
             >
+              <button
+                type="button"
+                className="btn-change-password-dash"
+                onClick={() => setIsChangePasswordOpen(true)}
+                style={{
+                  background: user?.mustChangePassword ? "#ea580c" : "#ffffff",
+                  color: user?.mustChangePassword ? "#ffffff" : "#2563eb",
+                  border: user?.mustChangePassword ? "none" : "1.5px solid #bfdbfe",
+                  padding: "10px 18px",
+                  borderRadius: "8px",
+                  fontWeight: "700",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+                }}
+              >
+                <FiLock size={15} /> Change Password
+              </button>
+
               <button
                 className="btn-add-schedule"
                 onClick={() => setIsAddScheduleOpen(true)}
@@ -1606,6 +1656,13 @@ function FacultyDashboard() {
               </div>
             </form>
           </Modal>
+
+          <ChangePasswordModal
+            isOpen={isChangePasswordOpen}
+            onClose={() => setIsChangePasswordOpen(false)}
+            onSuccess={() => setToastMessage("Password changed successfully! Your account is secured.")}
+            isForced={Boolean(user?.mustChangePassword)}
+          />
 
         </main>
       </div>

@@ -74,8 +74,27 @@ const loginAccountLimiter = rateLimit({
 
 });
 
+// ==========================================
+// PASSWORD RESET RATE LIMIT
+// ==========================================
+
+// Prevents brute force token guessing and email flooding
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10, // Maximum 10 password reset requests per IP per 15 minutes
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message:
+      "Too many password reset requests from this IP. Please try again after 15 minutes.",
+  },
+});
+
 module.exports = {
   apiLimiter,
   loginIpLimiter,
   loginAccountLimiter,
+  passwordResetLimiter,
 };
+

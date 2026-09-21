@@ -7,12 +7,14 @@ const {
   createFaculty,
   updateFaculty,
   deleteFaculty,
+  changePassword,
 } = require("../controllers/facultyController");
 
 const router = express.Router();
 
-router.get("/",protect,authorize("Admin","Faculty"),getAllFaculty);
+router.get("/", protect, authorize("Admin", "Faculty"), getAllFaculty);
 router.post("/create", protect, authorize("Admin"), createFaculty);
+router.post("/change-password", protect, authorize("Faculty"), changePassword);
 router.put("/:facultyId", protect, authorize("Admin"), updateFaculty);
 router.delete("/:facultyId", protect, authorize("Admin"), deleteFaculty);
 
