@@ -5,6 +5,7 @@ import {
   FiTrash2,
   FiSearch,
   FiEdit2,
+  FiFilter,
 } from "react-icons/fi";
 import Modal from "../components/Modal.jsx";
 import "./ManageLectures.css";
@@ -895,15 +896,19 @@ function ManageLectures() {
 
           {/* FACULTY FILTER OPTIONS */}
           <div className="lecture-faculty-filter">
-            <label>Filter Faculty</label>
-            <select
-              value={facultyFilter}
-              onChange={(e) => setFacultyFilter(e.target.value)}
-            >
-              <option value="all">All Faculty</option>
-              <option value="has">Has Lecture</option>
-              <option value="none">No Lecture</option>
-            </select>
+            <label htmlFor="faculty-filter">Filter Faculty</label>
+            <div className="select-input-wrapper">
+              <FiFilter className="filter-icon" />
+              <select
+                id="faculty-filter"
+                value={facultyFilter}
+                onChange={(e) => setFacultyFilter(e.target.value)}
+              >
+                <option value="all">All Faculty</option>
+                <option value="has">Has Lecture</option>
+                <option value="none">No Lecture</option>
+              </select>
+            </div>
           </div>
 
         </div>
