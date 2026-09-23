@@ -116,25 +116,25 @@ const createFaculty = async (req, res) => {
       });
     }
 
-    // Find last faculty ID of this section
-    const lastFaculty = await Faculty.findOne({
-      section,
-      facultyId: { $regex: `^${section.replace(".", "\\.")}-F\\d+$` },
-    }).sort({ facultyId: -1 });
+    const sectionPrefix = section.replace(/\./g, "");
 
-    let nextNumber = 1;
+    // Find all existing faculty IDs of this section (case-insensitive) to determine next number
+    const existingFaculties = await Faculty.find({
+      facultyId: { $regex: `^${sectionPrefix}-F\\d+$`, $options: "i" },
+    }).select("facultyId").lean();
 
-    if (lastFaculty) {
-      const lastNumber = parseInt(
-        lastFaculty.facultyId.split("-F")[1],
-        10
-      );
+    let maxNumber = 0;
+    existingFaculties.forEach((f) => {
+      const match = f.facultyId.match(/-F(\d+)$/i);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNumber) {
+          maxNumber = num;
+        }
+      }
+    });
 
-      nextNumber = lastNumber + 1;
-    }
-
-    const sectionPrefix = section.replace(".", "");
-
+    const nextNumber = maxNumber + 1;
     const facultyId = `${sectionPrefix}-F${String(nextNumber).padStart(3, "0")}`;
 
     // Generate 32-byte cryptographically secure random token (R-1)
@@ -203,6 +203,13 @@ const createFaculty = async (req, res) => {
     });
   } catch (error) {
     console.error("Create faculty error:", error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "A faculty with this email or faculty ID already exists.",
+      });
+    }
 
     return res.status(500).json({
       success: false,

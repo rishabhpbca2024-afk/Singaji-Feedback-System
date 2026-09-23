@@ -44,8 +44,8 @@ const getOverallReport = async (req, res) => {
     const feedbackCompletion =
       totalDesignatedStudents > 0
         ? Math.round(
-            (totalSubmittedStudents / totalDesignatedStudents) * 100
-          )
+          (totalSubmittedStudents / totalDesignatedStudents) * 100
+        )
         : 0;
 
     const overallResult = await Feedback.aggregate([
@@ -57,53 +57,53 @@ const getOverallReport = async (req, res) => {
           _id: null,
 
           overallRating: {
-  $avg: {
-    $divide: [
-      {
-        $add: [
-          '$metrics.Explanation',
-          '$metrics.Punctuality',
-          '$metrics.Engagement',
-          '$metrics.Resolution',
-          '$metrics.Overall',
-        ],
-      },
-      5,
-    ],
-  },
-},
-
-totalSubmissions: {
-  $sum: 1,
-},
-
-lowScoreAlerts: {
-  $sum: {
-    $cond: [
-      {
-        $lt: [
-          {
-            $divide: [
-              {
-                $add: [
-                  '$metrics.Explanation',
-                  '$metrics.Punctuality',
-                  '$metrics.Engagement',
-                  '$metrics.Resolution',
-                  '$metrics.Overall',
-                ],
-              },
-              5,
-            ],
+            $avg: {
+              $divide: [
+                {
+                  $add: [
+                    '$metrics.Explanation',
+                    '$metrics.Punctuality',
+                    '$metrics.Engagement',
+                    '$metrics.Resolution',
+                    '$metrics.Overall',
+                  ],
+                },
+                5,
+              ],
+            },
           },
-          3.5,
-        ],
-      },
-      1,
-      0,
-    ],
-  },
-},
+
+          totalSubmissions: {
+            $sum: 1,
+          },
+
+          lowScoreAlerts: {
+            $sum: {
+              $cond: [
+                {
+                  $lt: [
+                    {
+                      $divide: [
+                        {
+                          $add: [
+                            '$metrics.Explanation',
+                            '$metrics.Punctuality',
+                            '$metrics.Engagement',
+                            '$metrics.Resolution',
+                            '$metrics.Overall',
+                          ],
+                        },
+                        5,
+                      ],
+                    },
+                    3.5,
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
         },
       },
     ]);
@@ -120,55 +120,55 @@ lowScoreAlerts: {
         $group: {
           _id: '$section',
 
-         
+
           overallRating: {
-  $avg: {
-    $divide: [
-      {
-        $add: [
-          '$metrics.Explanation',
-          '$metrics.Punctuality',
-          '$metrics.Engagement',
-          '$metrics.Resolution',
-          '$metrics.Overall',
-        ],
-      },
-      5,
-    ],
-  },
-},
-
-totalSubmissions: {
-  $sum: 1,
-},
-
-lowScoreAlerts: {
-  $sum: {
-    $cond: [
-      {
-        $lt: [
-          {
-            $divide: [
-              {
-                $add: [
-                  '$metrics.Explanation',
-                  '$metrics.Punctuality',
-                  '$metrics.Engagement',
-                  '$metrics.Resolution',
-                  '$metrics.Overall',
-                ],
-              },
-              5,
-            ],
+            $avg: {
+              $divide: [
+                {
+                  $add: [
+                    '$metrics.Explanation',
+                    '$metrics.Punctuality',
+                    '$metrics.Engagement',
+                    '$metrics.Resolution',
+                    '$metrics.Overall',
+                  ],
+                },
+                5,
+              ],
+            },
           },
-          3.5,
-        ],
-      },
-      1,
-      0,
-    ],
-  },
-},
+
+          totalSubmissions: {
+            $sum: 1,
+          },
+
+          lowScoreAlerts: {
+            $sum: {
+              $cond: [
+                {
+                  $lt: [
+                    {
+                      $divide: [
+                        {
+                          $add: [
+                            '$metrics.Explanation',
+                            '$metrics.Punctuality',
+                            '$metrics.Engagement',
+                            '$metrics.Resolution',
+                            '$metrics.Overall',
+                          ],
+                        },
+                        5,
+                      ],
+                    },
+                    3.5,
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
         },
       },
       {
@@ -183,103 +183,103 @@ lowScoreAlerts: {
     // =========================================================
 
     const topRatedFaculty = await Feedback.aggregate([
-  // Date filter only when date is selected
-  ...(date ? [{ $match: dateFilter }] : []),
+      // Date filter only when date is selected
+      ...(date ? [{ $match: dateFilter }] : []),
 
-  {
-    $group: {
-      _id: {
-        facultyName: "$facultyName",
-        section: "$section",
-        subject: "$subject",
-      },
-averageRating: {
-  $avg: {
-    $divide: [
       {
-        $add: [
-          "$metrics.Explanation",
-          "$metrics.Punctuality",
-          "$metrics.Engagement",
-          "$metrics.Resolution",
-          "$metrics.Overall",
-        ],
+        $group: {
+          _id: {
+            facultyName: "$facultyName",
+            section: "$section",
+            subject: "$subject",
+          },
+          averageRating: {
+            $avg: {
+              $divide: [
+                {
+                  $add: [
+                    "$metrics.Explanation",
+                    "$metrics.Punctuality",
+                    "$metrics.Engagement",
+                    "$metrics.Resolution",
+                    "$metrics.Overall",
+                  ],
+                },
+                5,
+              ],
+            },
+          },
+
+          totalFeedbacks: {
+            $sum: 1,
+          },
+        },
       },
-      5,
-    ],
-  },
-},
 
-totalFeedbacks: {
-  $sum: 1,
-},
-    },
-  },
-
-  // Only ratings >= 3.5 will be considered Top Rated
-  {
-    $match: {
-      averageRating: {
-        $gte: 3.5,
+      // Only ratings >= 3.5 will be considered Top Rated
+      {
+        $match: {
+          averageRating: {
+            $gte: 3.5,
+          },
+        },
       },
-    },
-  },
 
-  {
-    $sort: {
-      averageRating: -1,
-    },
-  },
+      {
+        $sort: {
+          averageRating: -1,
+        },
+      },
 
-  {
-    $limit: 4,
-  },
-]);
+      {
+        $limit: 4,
+      },
+    ]);
     // =========================================================
     // 4. LOW SCORE ALERTS
     // =========================================================
 
 
-const lowScoreAlerts = await Feedback.aggregate([
-  ...(date ? [{ $match: dateFilter }] : []),
+    const lowScoreAlerts = await Feedback.aggregate([
+      ...(date ? [{ $match: dateFilter }] : []),
 
-  {
-    $addFields: {
-      calculatedRating: {
-        $divide: [
-          {
-            $add: [
-              '$metrics.Explanation',
-              '$metrics.Punctuality',
-              '$metrics.Engagement',
-              '$metrics.Resolution',
-              '$metrics.Overall',
+      {
+        $addFields: {
+          calculatedRating: {
+            $divide: [
+              {
+                $add: [
+                  '$metrics.Explanation',
+                  '$metrics.Punctuality',
+                  '$metrics.Engagement',
+                  '$metrics.Resolution',
+                  '$metrics.Overall',
+                ],
+              },
+              5,
             ],
           },
-          5,
-        ],
+        },
       },
-    },
-  },
 
-  {
-    $match: {
-      calculatedRating: {
-        $lt: 3.5,
+      {
+        $match: {
+          calculatedRating: {
+            $lt: 3.5,
+          },
+        },
       },
-    },
-  },
 
-  {
-    $sort: {
-      calculatedRating: 1,
-    },
-  },
+      {
+        $sort: {
+          calculatedRating: 1,
+        },
+      },
 
-  {
-    $limit: 10,
-  },
-]);
+      {
+        $limit: 10,
+      },
+    ]);
 
     // =========================================================
     // 5. FINAL RESPONSE
@@ -288,21 +288,21 @@ const lowScoreAlerts = await Feedback.aggregate([
     const overall =
       overallResult.length > 0
         ? {
-            overallRating: Number(
-              Number(overallResult[0]?.overallRating ?? 0).toFixed(1)
-            ),
+          overallRating: Number(
+            Number(overallResult[0]?.overallRating ?? 0).toFixed(1)
+          ),
 
-            totalSubmissions:
-              overallResult[0]?.totalSubmissions ?? 0,
+          totalSubmissions:
+            overallResult[0]?.totalSubmissions ?? 0,
 
-            lowScoreAlerts:
-              overallResult[0]?.lowScoreAlerts ?? 0,
-          }
+          lowScoreAlerts:
+            overallResult[0]?.lowScoreAlerts ?? 0,
+        }
         : {
-            overallRating: 0,
-            totalSubmissions: 0,
-            lowScoreAlerts: 0,
-          };
+          overallRating: 0,
+          totalSubmissions: 0,
+          lowScoreAlerts: 0,
+        };
 
     return res.status(200).json({
       success: true,

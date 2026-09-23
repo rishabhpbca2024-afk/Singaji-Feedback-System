@@ -283,10 +283,7 @@ const submitFeedback = async (req, res) => {
 // VERIFY FEEDBACK TOKEN
 // GET /api/feedback/verify-token?token=...
 // =========================================================
-// =========================================================
-// VERIFY FEEDBACK TOKEN
-// GET /api/feedback/verify-token?token=...
-// =========================================================
+
 
 const verifyFeedbackToken = async (req, res) => {
   try {
@@ -451,22 +448,22 @@ const getAllFeedback = async (req, res) => {
             $addToSet: "$subject",
           },
 
-        overallRating: {
-  $avg: {
-    $divide: [
-      {
-        $add: [
-          "$metrics.Explanation",
-          "$metrics.Punctuality",
-          "$metrics.Engagement",
-          "$metrics.Resolution",
-          "$metrics.Overall",
-        ],
-      },
-      5,
-    ],
-  },
-},
+          overallRating: {
+            $avg: {
+              $divide: [
+                {
+                  $add: [
+                    "$metrics.Explanation",
+                    "$metrics.Punctuality",
+                    "$metrics.Engagement",
+                    "$metrics.Resolution",
+                    "$metrics.Overall",
+                  ],
+                },
+                5,
+              ],
+            },
+          },
 
           totalFeedbacks: {
             $sum: 1,
@@ -548,13 +545,13 @@ const getFeedbackByFaculty = async (
 
   try {
 
-  const { facultyId } = req.params;
+    const { facultyId } = req.params;
 
-const feedbacks = await Feedback.find({
-  facultyId,
-}).sort({
-  timestamp: -1,
-});
+    const feedbacks = await Feedback.find({
+      facultyId,
+    }).sort({
+      timestamp: -1,
+    });
 
 
     const totalCount =
@@ -567,41 +564,41 @@ const feedbacks = await Feedback.find({
     if (totalCount > 0) {
 
       const sum = feedbacks.reduce((acc, item) => {
-  const explanation = Number(
-    item.metrics?.Explanation || 0
-  );
+        const explanation = Number(
+          item.metrics?.Explanation || 0
+        );
 
-  const punctuality = Number(
-    item.metrics?.Punctuality || 0
-  );
+        const punctuality = Number(
+          item.metrics?.Punctuality || 0
+        );
 
-  const engagement = Number(
-    item.metrics?.Engagement || 0
-  );
+        const engagement = Number(
+          item.metrics?.Engagement || 0
+        );
 
-  const resolution = Number(
-    item.metrics?.Resolution || 0
-  );
+        const resolution = Number(
+          item.metrics?.Resolution || 0
+        );
 
-  const overall = Number(
-    item.metrics?.Overall || 0
-  );
+        const overall = Number(
+          item.metrics?.Overall || 0
+        );
 
-  const feedbackRating =
-    (
-      explanation +
-      punctuality +
-      engagement +
-      resolution +
-      overall
-    ) / 5;
+        const feedbackRating =
+          (
+            explanation +
+            punctuality +
+            engagement +
+            resolution +
+            overall
+          ) / 5;
 
-  return acc + feedbackRating;
-}, 0);
+        return acc + feedbackRating;
+      }, 0);
 
-avgRating = (
-  sum / totalCount
-).toFixed(1);
+      avgRating = (
+        sum / totalCount
+      ).toFixed(1);
     }
 
 
@@ -660,6 +657,7 @@ const sendFeedbackInvite = async (req, res) => {
     // =====================================================
     // VALIDATION (C-2)
     // =====================================================
+
     if (
       !studentEmail ||
       typeof studentEmail !== "string" ||
@@ -885,64 +883,64 @@ const getFacultyHistory = async (req, res) => {
     // 5. OVERALL RATING
     // =====================================================
 
-   const feedbackRatings = facultyFeedbacks
-  .map((feedback) => {
-    const explanation = Number(
-      feedback.metrics?.Explanation
-    );
+    const feedbackRatings = facultyFeedbacks
+      .map((feedback) => {
+        const explanation = Number(
+          feedback.metrics?.Explanation
+        );
 
-    const punctuality = Number(
-      feedback.metrics?.Punctuality
-    );
+        const punctuality = Number(
+          feedback.metrics?.Punctuality
+        );
 
-    const engagement = Number(
-      feedback.metrics?.Engagement
-    );
+        const engagement = Number(
+          feedback.metrics?.Engagement
+        );
 
-    const resolution = Number(
-      feedback.metrics?.Resolution
-    );
+        const resolution = Number(
+          feedback.metrics?.Resolution
+        );
 
-    const overall = Number(
-      feedback.metrics?.Overall
-    );
+        const overall = Number(
+          feedback.metrics?.Overall
+        );
 
-    if (
-      !Number.isFinite(explanation) ||
-      !Number.isFinite(punctuality) ||
-      !Number.isFinite(engagement) ||
-      !Number.isFinite(resolution) ||
-      !Number.isFinite(overall)
-    ) {
-      return null;
-    }
+        if (
+          !Number.isFinite(explanation) ||
+          !Number.isFinite(punctuality) ||
+          !Number.isFinite(engagement) ||
+          !Number.isFinite(resolution) ||
+          !Number.isFinite(overall)
+        ) {
+          return null;
+        }
 
-    return (
-      explanation +
-      punctuality +
-      engagement +
-      resolution +
-      overall
-    ) / 5;
-  })
-  .filter(
-    (rating) =>
-      Number.isFinite(rating) &&
-      rating >= 1 &&
-      rating <= 5
-  );
+        return (
+          explanation +
+          punctuality +
+          engagement +
+          resolution +
+          overall
+        ) / 5;
+      })
+      .filter(
+        (rating) =>
+          Number.isFinite(rating) &&
+          rating >= 1 &&
+          rating <= 5
+      );
 
-const averageScore =
-  feedbackRatings.length > 0
-    ? Number(
-        (
-          feedbackRatings.reduce(
-            (sum, rating) => sum + rating,
-            0
-          ) / feedbackRatings.length
-        ).toFixed(1)
-      )
-    : 0;
+    const averageScore =
+      feedbackRatings.length > 0
+        ? Number(
+          (
+            feedbackRatings.reduce(
+              (sum, rating) => sum + rating,
+              0
+            ) / feedbackRatings.length
+          ).toFixed(1)
+        )
+        : 0;
 
     // =====================================================
     // 6. QUESTION-WISE AVERAGES
@@ -1069,20 +1067,7 @@ const averageScore =
 };
 // =========================================================
 // GET FACULTY FEEDBACK VIEW
-// =========================================================
-// @route GET /api/feedback/faculty-view?facultyName=Anees%20sir&date=2026-09-07
-// =========================================================
-// GET FACULTY FEEDBACK VIEW
-// =========================================================
-// GET /api/feedback/faculty-view
-// ?facultyName=Anees%20sir&date=2026-09-07
-// =========================================================
-// =========================================================
-// GET FACULTY FEEDBACK VIEW
-// =========================================================
-// GET /api/feedback/faculty-view
-// ?facultyId=ITEG-F003&date=2026-09-07
-// =========================================================
+
 
 const getFacultyFeedbackView = async (req, res) => {
   try {
@@ -1173,11 +1158,11 @@ const getFacultyFeedbackView = async (req, res) => {
       });
 
       for (const item of matchingSlots) {
-        
-       const actualStrength = await SelectedStudents.countDocuments({
-  department: schedule.department,
-  level: { $in: schedule.groups || [] },
-});
+
+        const actualStrength = await SelectedStudents.countDocuments({
+          department: schedule.department,
+          level: { $in: schedule.groups || [] },
+        });
 
         facultyLectures.push({
           scheduleId: schedule._id,
@@ -1200,7 +1185,7 @@ const getFacultyFeedbackView = async (req, res) => {
 
           groups: schedule.groups || [],
 
-          strength: actualStrength, 
+          strength: actualStrength,
         });
       }
     }
@@ -1344,14 +1329,14 @@ const getFacultyFeedbackView = async (req, res) => {
 
           return (
             lectureDepartment ===
-              feedbackDepartment &&
+            feedbackDepartment &&
             lectureFacultyId ===
-              feedbackFacultyId &&
+            feedbackFacultyId &&
             lectureGroups.includes(
               feedbackLevel
             ) &&
             lectureEndTime ===
-              feedbackLectureEndTime
+            feedbackLectureEndTime
           );
         });
 
@@ -1414,37 +1399,37 @@ const getFacultyFeedbackView = async (req, res) => {
           // Overall average
           // ----------------------------------------------
 
-       const overallAverage = average(
-  lectureFeedbacks.map((item) => {
-    const explanation = Number(
-      item.metrics?.Explanation || 0
-    );
+          const overallAverage = average(
+            lectureFeedbacks.map((item) => {
+              const explanation = Number(
+                item.metrics?.Explanation || 0
+              );
 
-    const punctuality = Number(
-      item.metrics?.Punctuality || 0
-    );
+              const punctuality = Number(
+                item.metrics?.Punctuality || 0
+              );
 
-    const engagement = Number(
-      item.metrics?.Engagement || 0
-    );
+              const engagement = Number(
+                item.metrics?.Engagement || 0
+              );
 
-    const resolution = Number(
-      item.metrics?.Resolution || 0
-    );
+              const resolution = Number(
+                item.metrics?.Resolution || 0
+              );
 
-    const overall = Number(
-      item.metrics?.Overall || 0
-    );
+              const overall = Number(
+                item.metrics?.Overall || 0
+              );
 
-    return (
-      explanation +
-      punctuality +
-      engagement +
-      resolution +
-      overall
-    ) / 5;
-  })
-);
+              return (
+                explanation +
+                punctuality +
+                engagement +
+                resolution +
+                overall
+              ) / 5;
+            })
+          );
 
           // ----------------------------------------------
           // Parameters
@@ -1559,7 +1544,7 @@ const getFacultyFeedbackView = async (req, res) => {
                   remark &&
                   remark.length > 0 &&
                   remark !==
-                    "Great lecture session."
+                  "Great lecture session."
               );
 
           return {
@@ -1624,10 +1609,10 @@ const getFacultyFeedbackView = async (req, res) => {
     const overallRating =
       totalResponses > 0
         ? Number(
-            average(
-              allOverallValues
-            )
+          average(
+            allOverallValues
           )
+        )
         : 0;
 
     return res.status(200).json({
@@ -2083,7 +2068,7 @@ const getMyFeedback = async (req, res) => {
                 (feedback) =>
                   Number(
                     feedback.metrics?.[
-                      metricName
+                    metricName
                     ]
                   )
               )
@@ -2300,15 +2285,15 @@ const getMyFeedback = async (req, res) => {
     const averageRating =
       allOverallRatings.length > 0
         ? Number(
-            (
-              allOverallRatings.reduce(
-                (sum, rating) =>
-                  sum + rating,
-                0
-              ) /
-              allOverallRatings.length
-            ).toFixed(1)
-          )
+          (
+            allOverallRatings.reduce(
+              (sum, rating) =>
+                sum + rating,
+              0
+            ) /
+            allOverallRatings.length
+          ).toFixed(1)
+        )
         : 0;
 
     // -----------------------------------------------------
