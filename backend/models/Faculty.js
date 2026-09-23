@@ -25,7 +25,22 @@ const facultySchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      default: null,
+    },
+
+    isActivated: {
+      type: Boolean,
+      default: false,
+    },
+
+    activationToken: {
+      type: String,
+      default: null,
+    },
+
+    activationTokenExpires: {
+      type: Date,
+      default: null,
     },
 
     mustChangePassword: {

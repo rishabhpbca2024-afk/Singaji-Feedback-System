@@ -51,13 +51,25 @@ const protect = async (req, res, next) => {
     // 3. DB Re-check for existence, isActive, passwordChangedAt and mustChangePassword
     if (decoded.role === "Faculty") {
       const faculty = await Faculty.findById(decoded.userId)
-        .select("isActive facultyId section mustChangePassword passwordChangedAt")
+        .select("isActive isActivated activationToken password facultyId section mustChangePassword passwordChangedAt")
         .lean();
 
       if (!faculty || faculty.isActive === false) {
         return res.status(401).json({
           success: false,
           message: "Faculty account is inactive or does not exist.",
+        });
+      }
+
+      // Block unactivated accounts from accessing protected routes (R-6)
+      const isPendingActivation =
+        faculty.isActivated === false &&
+        (faculty.activationToken || !faculty.password);
+
+      if (isPendingActivation) {
+        return res.status(401).json({
+          success: false,
+          message: "Faculty account is not activated.",
         });
       }
 

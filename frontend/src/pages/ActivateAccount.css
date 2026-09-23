@@ -1,0 +1,293 @@
+/* ========================================
+   ACTIVATE ACCOUNT PAGE — Matches Login Style
+   Clean Card Layout with Password Rules
+======================================== */
+
+.activate-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.82) 100%),
+    url("../assets/HelloB.png");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+}
+
+/* ── Top Navbar ── */
+.activate-navbar {
+  width: 100%;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  padding: 0 36px;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+
+.activate-navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activate-navbar-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #ffffff;
+  padding: 3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.activate-navbar-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.activate-navbar-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f97316;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.activate-navbar-full {
+  font-size: 11px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* ── Content Container ── */
+.activate-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* ── Card ── */
+.activate-card {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 36px 32px;
+  box-sizing: border-box;
+}
+
+.activate-logo-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.activate-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.activate-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: center;
+  margin: 0 0 6px 0;
+}
+
+.activate-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  text-align: center;
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+/* ── Form Groups ── */
+.activate-form-group {
+  margin-bottom: 18px;
+}
+
+.activate-form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.activate-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.activate-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  font-size: 16px;
+}
+
+.activate-input-wrapper input {
+  width: 100%;
+  padding: 11px 14px 11px 40px;
+  font-size: 14px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.activate-input-wrapper input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* ── Password Rules Badges ── */
+.activate-rules {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.activate-rules-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  margin: 0 0 8px 0;
+}
+
+.activate-rules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.activate-rules-list li {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.activate-rules-list li.valid {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.activate-rules-list li.valid svg {
+  color: #16a34a;
+}
+
+/* ── Error Banner ── */
+.activate-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.activate-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff1f2;
+  border: 1px solid #fda4af;
+  color: #9f1239;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.activate-error-banner strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.activate-error-banner p {
+  margin: 0;
+  color: #4c0519;
+}
+
+/* ── Submit Button ── */
+.activate-btn {
+  width: 100%;
+  padding: 12px;
+  background: #f97316;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.activate-btn:hover:not(:disabled) {
+  background: #ea580c;
+}
+
+.activate-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* ── Success Card ── */
+.activate-success-card {
+  text-align: center;
+  padding: 20px 10px;
+}
+
+.activate-success-icon {
+  color: #16a34a;
+  margin-bottom: 16px;
+}
+
+.activate-success-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.activate-success-card p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}

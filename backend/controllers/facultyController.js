@@ -1,14 +1,58 @@
+const crypto = require("crypto");
 const Faculty = require("../models/Faculty");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { encryptToken } = require("../utils/tokenEncryption");
 const { validatePassword } = require("../utils/passwordValidator");
-const { sendFacultyCredentialsEmail } = require("../utils/sendEmail");
+const {
+  sendFacultyCredentialsEmail,
+  sendFacultyActivationEmail,
+} = require("../utils/sendEmail");
+
+/**
+ * Checks for duplicate faculty emails, taking into account Gmail '.' and '+' alias tricks (R-7).
+ * Existing stored email format is untouched.
+ */
+const checkDuplicateGmail = async (inputEmail, excludeFacultyId = null) => {
+  const normalized = String(inputEmail || "").toLowerCase().trim();
+  const parts = normalized.split("@");
+  if (parts.length !== 2) return false;
+
+  const [localPart, domain] = parts;
+  if (domain === "gmail.com" || domain === "googlemail.com") {
+    const cleanLocal = localPart.split("+")[0].replace(/\./g, "");
+    if (!cleanLocal) return false;
+
+    const regexPattern =
+      "^" +
+      cleanLocal
+        .split("")
+        .map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+        .join("\\.?") +
+      "(\\+[^@]*)?@(gmail|googlemail)\\.com$";
+
+    const query = {
+      gmail: { $regex: new RegExp(regexPattern, "i") },
+    };
+    if (excludeFacultyId) {
+      query.facultyId = { $ne: excludeFacultyId };
+    }
+    const existing = await Faculty.findOne(query);
+    return !!existing;
+  }
+
+  const query = { gmail: normalized };
+  if (excludeFacultyId) {
+    query.facultyId = { $ne: excludeFacultyId };
+  }
+  const existing = await Faculty.findOne(query);
+  return !!existing;
+};
 
 const getAllFaculty = async (req, res) => {
   try {
     const faculty = await Faculty.find()
-      .select("facultyId name gmail section subjects isActive")
+      .select("facultyId name gmail section subjects isActive isActivated")
       .sort({ section: 1, name: 1 });
 
     const sections = {
@@ -62,13 +106,13 @@ const createFaculty = async (req, res) => {
       });
     }
 
-    // Check duplicate gmail
-    const existingFaculty = await Faculty.findOne({ gmail });
+    // Check duplicate gmail with alias defense (R-7)
+    const isDuplicate = await checkDuplicateGmail(gmail);
 
-    if (existingFaculty) {
+    if (isDuplicate) {
       return res.status(409).json({
         success: false,
-        message: "Faculty with this gmail already exists",
+        message: "Faculty with this gmail (or an alias of it) already exists",
       });
     }
 
@@ -93,41 +137,59 @@ const createFaculty = async (req, res) => {
 
     const facultyId = `${sectionPrefix}-F${String(nextNumber).padStart(3, "0")}`;
 
-    // Institutional temporary initial password
-    const initialPassword = "Faculty@123";
+    // Generate 32-byte cryptographically secure random token (R-1)
+    const rawToken = crypto.randomBytes(32).toString("hex");
 
-    // Hash password using standardized bcrypt (M-7)
-    const hashedPassword = await bcrypt.hash(initialPassword, 10);
+    // Hash token using SHA-256 for secure database storage (R-2)
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    // Expiry: 48 hours (R-2)
+    const activationTokenExpires = new Date(Date.now() + 48 * 60 * 60 * 1000);
 
     const faculty = await Faculty.create({
       facultyId,
       name: name.trim(),
-      gmail: gmail.toLowerCase().trim(),
-      password: hashedPassword,
-      mustChangePassword: true,
+      gmail: gmail.toLowerCase().trim(), // Existing storage format preserved (R-7)
+      password: null, // No default password (R-1)
+      isActivated: false, // Inactive until faculty sets password (R-6)
+      activationToken: hashedToken,
+      activationTokenExpires,
+      mustChangePassword: false,
       section,
       subjects,
       isActive: true,
     });
 
-    // Send institutional credentials email to faculty
+    // Frontend activation link (R-3)
+    const frontendUrl = process.env.FRONTEND_URL
+      ? (process.env.FRONTEND_URL.startsWith("http")
+          ? process.env.FRONTEND_URL
+          : `https://${process.env.FRONTEND_URL}`)
+      : "http://localhost:5173";
+
+    const activationUrl = `${frontendUrl}/activate-account?token=${encodeURIComponent(rawToken)}`;
+
+    // Send activation link to registered email directly from DB document (R-3)
     try {
-      await sendFacultyCredentialsEmail({
+      await sendFacultyActivationEmail({
         to: faculty.gmail,
         facultyName: faculty.name,
         facultyId: faculty.facultyId,
-        tempPassword: initialPassword,
+        activationUrl,
       });
     } catch (emailErr) {
       console.error(
-        "Failed to send faculty credentials email:",
+        "Failed to send faculty activation email:",
         emailErr.message
       );
     }
 
     return res.status(201).json({
       success: true,
-      message: "Faculty created successfully",
+      message: "Faculty created successfully. An activation link has been sent to their registered email.",
       faculty: {
         id: faculty._id,
         facultyId: faculty.facultyId,
@@ -136,7 +198,7 @@ const createFaculty = async (req, res) => {
         section: faculty.section,
         subjects: faculty.subjects,
         isActive: faculty.isActive,
-        mustChangePassword: faculty.mustChangePassword,
+        isActivated: faculty.isActivated,
       },
     });
   } catch (error) {
@@ -180,16 +242,13 @@ const updateFaculty = async (req, res) => {
       });
     }
 
-    // Check duplicate gmail
-    const existingFaculty = await Faculty.findOne({
-      gmail: gmail.toLowerCase().trim(),
-      facultyId: { $ne: facultyId },
-    });
+    // Check duplicate gmail with alias defense (R-7)
+    const isDuplicate = await checkDuplicateGmail(gmail, facultyId);
 
-    if (existingFaculty) {
+    if (isDuplicate) {
       return res.status(409).json({
         success: false,
-        message: "This gmail is already registered with another faculty",
+        message: "This gmail (or an alias of it) is already registered with another faculty",
       });
     }
 

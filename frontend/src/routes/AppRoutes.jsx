@@ -7,6 +7,7 @@ import {
 
 import Login from "../pages/Login.jsx";
 import Register from "../pages/Register.jsx";
+import ActivateAccount from "../pages/ActivateAccount.jsx";
 
 import StudentDashboard from "../pages/StudentDashboard.jsx";
 import FeedbackForm from "../pages/FeedbackForm.jsx";
@@ -60,6 +61,11 @@ function AppRoutes() {
         <Route
           path="/register"
           element={<Register />}
+        />
+
+        <Route
+          path="/activate-account"
+          element={<ActivateAccount />}
         />
 
 

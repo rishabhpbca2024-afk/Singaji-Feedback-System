@@ -91,10 +91,34 @@ const passwordResetLimiter = rateLimit({
   },
 });
 
+// ==========================================
+// ACTIVATION LINK RESEND RATE LIMIT
+// ==========================================
+
+// Prevents email flooding (1 request per 2 minutes per email + IP)
+const activationResendLimiter = rateLimit({
+  windowMs: 2 * 60 * 1000, // 2 minutes
+  limit: 1, // Maximum 1 request per 2 minutes
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many activation link requests. Please wait 2 minutes before requesting another link.",
+  },
+  keyGenerator: (req) => {
+    const rawEmail = String(req.body?.gmail || req.body?.email || "")
+      .trim()
+      .toLowerCase();
+    const ip = ipKeyGenerator(req.ip);
+    return `activate:${rawEmail}:${ip}`;
+  },
+});
+
 module.exports = {
   apiLimiter,
   loginIpLimiter,
   loginAccountLimiter,
   passwordResetLimiter,
+  activationResendLimiter,
 };
 

@@ -3,6 +3,7 @@ const {
   loginAccountLimiter,
   loginIpLimiter,
   passwordResetLimiter,
+  activationResendLimiter,
 } = require("../middleware/Ratelimiter");
 const {
   Login,
@@ -10,6 +11,8 @@ const {
   forgotPassword,
   resetPassword,
   changeAdminPassword,
+  activateFacultyAccount,
+  resendActivationLink,
 } = require('../controllers/authController');
 const { protect, authorize } = require("../middleware/authMiddleware");
 
@@ -19,6 +22,10 @@ router.post("/login", loginAccountLimiter, loginIpLimiter, Login);
 router.post("/logout", logout);
 router.post("/forgot-password", passwordResetLimiter, forgotPassword);
 router.post("/reset-password", passwordResetLimiter, resetPassword);
+
+// Faculty Account Activation Flow (R-4, R-8)
+router.post("/activate-account", activateFacultyAccount);
+router.post("/resend-activation", activationResendLimiter, resendActivationLink);
 
 
 // Admin simple change password route (optional, at-will)

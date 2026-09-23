@@ -404,8 +404,172 @@ const sendPasswordResetEmail = async ({
   }
 };
 
+// =====================================================
+// SEND FACULTY ACTIVATION EMAIL
+// =====================================================
+
+const sendFacultyActivationEmail = async ({
+  to,
+  facultyName,
+  facultyId,
+  activationUrl,
+}) => {
+  try {
+    const safeFacultyName = escapeHtml(String(facultyName || "Faculty Member").trim());
+    const safeFacultyId = escapeHtml(String(facultyId || "").trim());
+    const safeTo = escapeHtml(String(to || "").trim());
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 8px;">
+          Welcome to Singaji Feedback System
+        </h2>
+        <p>Dear <strong>${safeFacultyName}</strong>,</p>
+        <p>Your institutional faculty account has been created by the administrator. Please activate your account and set your secure personal password using the link below:</p>
+        
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 6px 0;"><strong>Faculty ID:</strong> ${safeFacultyId}</p>
+          <p style="margin: 6px 0;"><strong>Institutional Email:</strong> ${safeTo}</p>
+        </div>
+
+        <p style="margin: 24px 0;">
+          <a href="${activationUrl}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+            Activate Account & Set Password
+          </a>
+        </p>
+
+        <p style="color: #475569; font-size: 14px;">
+          Or copy and paste this URL into your browser:
+        </p>
+        <p style="word-break: break-all; color: #2563eb; font-size: 13px;">
+          ${activationUrl}
+        </p>
+
+        <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0;">
+          <p style="margin: 0; color: #92400e; font-size: 13px;">
+            <strong>Important Notice:</strong> This activation link is valid for <strong>48 hours</strong> and can only be used once. For security reasons, you cannot log in or access the portal until you set your password.
+          </p>
+        </div>
+
+        <p style="color: #64748b; font-size: 13px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+          Singaji Institute of Science and Management &bull; Institutional Feedback Portal
+        </p>
+      </div>
+    `;
+
+    const rawMessage = await createRawMessage({
+      from: process.env.MAIL_USER,
+      to: String(to || "").trim(),
+      subject: `Activate Your Faculty Account - Singaji Feedback System`,
+      html,
+    });
+
+    const response = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: rawMessage,
+      },
+    });
+
+    console.log(`[FACULTY ACTIVATION EMAIL SENT] To: ${to}, Message ID: ${response.data.id}`);
+
+    return {
+      success: true,
+      messageId: response.data.id,
+    };
+  } catch (error) {
+    console.error(
+      "[GMAIL API FACULTY ACTIVATION EMAIL ERROR]:",
+      error.response?.data || error.message
+    );
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message,
+    };
+  }
+};
+
+// =====================================================
+// SEND PASSWORD SET CONFIRMATION EMAIL
+// =====================================================
+
+const sendPasswordSetConfirmationEmail = async ({
+  to,
+  facultyName,
+  facultyId,
+}) => {
+  try {
+    const loginUrl = process.env.FRONTEND_URL
+      ? (process.env.FRONTEND_URL.startsWith("http")
+          ? `${process.env.FRONTEND_URL}/login`
+          : `https://${process.env.FRONTEND_URL}/login`)
+      : "http://localhost:5173/login";
+
+    const safeFacultyName = escapeHtml(String(facultyName || "Faculty Member").trim());
+    const safeFacultyId = escapeHtml(String(facultyId || "").trim());
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #16a34a; border-bottom: 2px solid #22c55e; padding-bottom: 8px;">
+          Account Activated Successfully
+        </h2>
+        <p>Dear <strong>${safeFacultyName}</strong>,</p>
+        <p>Your password for your Singaji Feedback System faculty account (Faculty ID: <strong>${safeFacultyId}</strong>) has been successfully set, and your account is now fully active.</p>
+
+        <p style="margin: 24px 0;">
+          <a href="${loginUrl}" style="background-color: #16a34a; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+            Sign In to Your Account
+          </a>
+        </p>
+
+        <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 20px 0;">
+          <p style="margin: 0; color: #166534; font-size: 13px;">
+            <strong>Security Notice:</strong> If you did not perform this action, please contact your system administrator immediately.
+          </p>
+        </div>
+
+        <p style="color: #64748b; font-size: 13px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+          Singaji Institute of Science and Management &bull; Institutional Feedback Portal
+        </p>
+      </div>
+    `;
+
+    const rawMessage = await createRawMessage({
+      from: process.env.MAIL_USER,
+      to: String(to || "").trim(),
+      subject: `Account Activated & Password Set Successfully - Singaji Feedback System`,
+      html,
+    });
+
+    const response = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: rawMessage,
+      },
+    });
+
+    console.log(`[PASSWORD SET CONFIRMATION SENT] To: ${to}, Message ID: ${response.data.id}`);
+
+    return {
+      success: true,
+      messageId: response.data.id,
+    };
+  } catch (error) {
+    console.error(
+      "[GMAIL API CONFIRMATION EMAIL ERROR]:",
+      error.response?.data || error.message
+    );
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message,
+    };
+  }
+};
+
 module.exports = {
   sendFeedbackLinkEmail,
   sendFacultyCredentialsEmail,
   sendPasswordResetEmail,
+  sendFacultyActivationEmail,
+  sendPasswordSetConfirmationEmail,
 };
