@@ -67,6 +67,7 @@
     "has-flag": "^3.0.0",
     "has-symbols": "^1.1.0",
     "hasown": "^2.0.4",
+    "helmet": "^8.3.0",
     "http-errors": "^2.0.1",
     "https-proxy-agent": "^7.0.6",
     "iconv-lite": "^0.4.24",
@@ -156,7 +157,7 @@
     "unpipe": "^1.0.0",
     "url-template": "^2.0.8",
     "utils-merge": "^1.0.1",
-    "uuid": "^9.0.1",
+    "uuid": "^11.1.1",
     "vary": "^1.1.2",
     "web-streams-polyfill": "^3.3.3",
     "webidl-conversions": "^7.0.0",
@@ -172,5 +173,8 @@
   "type": "commonjs",
   "allowScripts": {
     "bcrypt@6.0.0": true
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
   }
 }

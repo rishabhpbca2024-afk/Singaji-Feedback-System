@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiAlertCircle, FiCheckCircle, FiLock, FiCheck } from "react-icons/fi";
 
@@ -10,7 +10,31 @@ import "./ActivateAccount.css";
 function ActivateAccount() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token") || "";
+
+  // Read token from hash fragment (#token=) or fallback to query parameter (?token=) (M-8)
+  const [token, setToken] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const hashToken = hashParams.get("token");
+      if (hashToken) return hashToken;
+    }
+    return searchParams.get("token") || "";
+  });
+
+  // Strip token immediately from URL / history to prevent leakage (M-8)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasHashToken = window.location.hash && window.location.hash.includes("token=");
+      const url = new URL(window.location.href);
+      const hasQueryToken = url.searchParams.has("token");
+      if (hasHashToken || hasQueryToken) {
+        url.searchParams.delete("token");
+        url.hash = "";
+        const cleanUrl = url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "");
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+  }, []);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

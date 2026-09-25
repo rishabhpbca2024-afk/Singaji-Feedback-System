@@ -3,6 +3,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const mongoSanitize = require("express-mongo-sanitize");
+const helmet = require("helmet");
 
 dotenv.config();
 
@@ -31,6 +32,16 @@ const {
 const app = express();
 
 // ==========================================
+// SECURITY HEADERS (M-3)
+// ==========================================
+app.disable("x-powered-by");
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
+// ==========================================
 // TRUST RENDER PROXY
 // ==========================================
 
@@ -41,12 +52,6 @@ app.set("trust proxy", 1);
 // ==========================================
 const allowedOrigins = [
   "https://singaji-feedback-system.vercel.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:5174",
-  "http://127.0.0.1:5174",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
 ];
 
 app.use(
@@ -56,10 +61,15 @@ app.use(
         return callback(null, true);
       }
 
-      // Always allow any localhost / 127.0.0.1 port for testing
+      // Always allow production Vercel frontend origin
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Allow localhost and 127.0.0.1 on any port ONLY in non-production environments
       if (
-        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
-        allowedOrigins.includes(origin)
+        process.env.NODE_ENV !== "production" &&
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
       ) {
         return callback(null, true);
       }
@@ -98,7 +108,6 @@ app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
     message: "Singaji Feedback Backend is running",
-    environment: process.env.NODE_ENV || "development",
   });
 });
 
@@ -145,9 +154,9 @@ app.use((error, req, res, next) => {
   return res.status(error.status || 500).json({
     success: false,
     message:
-      process.env.NODE_ENV === "production"
-        ? "Internal server error"
-        : error.message || "Internal server error",
+      process.env.NODE_ENV === "development"
+        ? error.message || "Internal server error"
+        : "Internal server error",
   });
 });
 

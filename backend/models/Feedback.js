@@ -2,10 +2,13 @@ const mongoose = require('mongoose');
 
 const feedbackSchema = new mongoose.Schema(
   {
+    // studentGmail: Deprecated for anonymity (H-4).
+    // Kept with select: false purely for legacy query safety so it is never returned.
     studentGmail: {
       type: String,
-      required: true,
       trim: true,
+      default: undefined,
+      select: false,
     },
 
     level: {
@@ -19,12 +22,12 @@ const feedbackSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
- 
+
     facultyId: {
-    type: String,
-    required: true,
-    trim: true,
-   }, 
+      type: String,
+      required: true,
+      trim: true,
+    },
 
     facultyName: {
       type: String,
@@ -37,13 +40,19 @@ const feedbackSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-  
+
+    lectureTime: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
     lectureEndTime: {
-    type: String,
-    required: true,
-    trim: true,
-},
-    
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     timestamp: {
       type: Date,
       default: Date.now,
@@ -91,7 +100,6 @@ const feedbackSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
-
   },
   {
     collection: 'Feedbacks',
@@ -100,19 +108,30 @@ const feedbackSchema = new mongoose.Schema(
 
 // Indexes for high-performance query execution (L-2)
 feedbackSchema.index({ facultyId: 1, timestamp: -1 });
-feedbackSchema.index({ studentGmail: 1, timestamp: -1 });
+feedbackSchema.index({ timestamp: -1 });
 
-// Compound unique index to prevent duplicate feedback submissions per student/faculty/subject/session
-feedbackSchema.index(
-  {
-    studentGmail: 1,
-    facultyId: 1,
-    subject: 1,
-    lectureEndTime: 1,
-  },
-  {
-    unique: true,
+// Automatically drop legacy studentGmail compound index if present in MongoDB to avoid duplicate null errors
+const dropLegacyIndex = async () => {
+  try {
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      const collection = mongoose.connection.collection('Feedbacks');
+      const indexes = await collection.indexes();
+      const hasLegacy = indexes.some(
+        (idx) => idx.name === 'studentGmail_1_facultyId_1_subject_1_lectureEndTime_1'
+      );
+      if (hasLegacy) {
+        await collection.dropIndex('studentGmail_1_facultyId_1_subject_1_lectureEndTime_1');
+        console.log('[INDEX MIGRATION] Dropped legacy studentGmail unique index from Feedbacks.');
+      }
+    }
+  } catch {
+    // Ignore if index is already dropped or collection does not exist
   }
-);
+};
 
-module.exports = mongoose.model('Feedback', feedbackSchema);
+mongoose.connection.on('connected', dropLegacyIndex);
+if (mongoose.connection && mongoose.connection.readyState === 1) {
+  dropLegacyIndex();
+}
+
+module.exports = mongoose.model('Feedback', feedbackSchema);

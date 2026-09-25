@@ -51,9 +51,20 @@ const checkDuplicateGmail = async (inputEmail, excludeFacultyId = null) => {
 
 const getAllFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.find()
-      .select("facultyId name gmail section subjects isActive isActivated")
-      .sort({ section: 1, name: 1 });
+    const isAdmin = req.user?.role === "Admin";
+
+    // Admins get full management fields; Faculty get only schedule display fields (M-6)
+    const selectFields = isAdmin
+      ? "facultyId name gmail section subjects isActive isActivated"
+      : "facultyId name section subjects";
+
+    // Non-admin faculty only see active faculty members
+    const filter = isAdmin ? {} : { isActive: true };
+
+    const faculty = await Faculty.find(filter)
+      .select(selectFields)
+      .sort({ section: 1, name: 1 })
+      .lean();
 
     const sections = {
       ITEG: [],
@@ -78,9 +89,9 @@ const getAllFaculty = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to fetch faculty"
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to fetch faculty",
     });
   }
 };
@@ -88,21 +99,45 @@ const getAllFaculty = async (req, res) => {
 
 const createFaculty = async (req, res) => {
   try {
-    const { name, gmail, subjects, section } = req.body;
+    const { name, gmail, subjects, section } = req.body || {};
 
-    // Required fields
-    if (!name || !gmail || !subjects || !section) {
+    // Required fields with strict type checks
+    if (
+      !name ||
+      typeof name !== "string" ||
+      !name.trim() ||
+      !gmail ||
+      typeof gmail !== "string" ||
+      !gmail.trim() ||
+      !section ||
+      typeof section !== "string" ||
+      !section.trim() ||
+      !subjects
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Name, gmail, subjects and section are required",
+        message: "Valid name, gmail, subjects and section are required",
       });
     }
 
-    // Subjects should be an array
-    if (!Array.isArray(subjects) || subjects.length === 0) {
+    const trimmedSection = section.trim();
+    const VALID_SECTIONS = ["ITEG", "MEG", "BEG", "B.Tech"];
+    if (!VALID_SECTIONS.includes(trimmedSection)) {
       return res.status(400).json({
         success: false,
-        message: "At least one subject is required",
+        message: `Invalid section. Must be one of: ${VALID_SECTIONS.join(", ")}`,
+      });
+    }
+
+    // Subjects should be an array of non-empty strings
+    if (
+      !Array.isArray(subjects) ||
+      subjects.length === 0 ||
+      subjects.some((s) => typeof s !== "string" || !s.trim())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one valid subject is required",
       });
     }
 
@@ -116,11 +151,12 @@ const createFaculty = async (req, res) => {
       });
     }
 
-    const sectionPrefix = section.replace(/\./g, "");
+    const sectionPrefix = trimmedSection.replace(/\./g, "");
+    const safePrefix = sectionPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     // Find all existing faculty IDs of this section (case-insensitive) to determine next number
     const existingFaculties = await Faculty.find({
-      facultyId: { $regex: `^${sectionPrefix}-F\\d+$`, $options: "i" },
+      facultyId: { $regex: `^${safePrefix}-F\\d+$`, $options: "i" },
     }).select("facultyId").lean();
 
     let maxNumber = 0;
@@ -163,14 +199,14 @@ const createFaculty = async (req, res) => {
       isActive: true,
     });
 
-    // Frontend activation link (R-3)
-    const frontendUrl = process.env.FRONTEND_URL
+    // Frontend activation link (R-3 / M-8)
+    const frontendUrl = (process.env.FRONTEND_URL
       ? (process.env.FRONTEND_URL.startsWith("http")
-          ? process.env.FRONTEND_URL
-          : `https://${process.env.FRONTEND_URL}`)
-      : "http://localhost:5173";
+        ? process.env.FRONTEND_URL
+        : `https://${process.env.FRONTEND_URL}`)
+      : "http://localhost:5173").replace(/\/$/, "");
 
-    const activationUrl = `${frontendUrl}/activate-account?token=${encodeURIComponent(rawToken)}`;
+    const activationUrl = `${frontendUrl}/activate-account#token=${encodeURIComponent(rawToken)}`;
 
     // Send activation link to registered email directly from DB document (R-3)
     try {
@@ -214,9 +250,9 @@ const createFaculty = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to create faculty"
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to create faculty",
     });
   }
 };
@@ -395,6 +431,7 @@ const changePassword = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
+        algorithm: "HS256",
       }
     );
 
@@ -412,7 +449,6 @@ const changePassword = async (req, res) => {
       success: true,
       message: "Password changed successfully.",
       mustChangePassword: false,
-      token,
     });
   } catch (error) {
     console.error("Change password error:", error);
@@ -420,9 +456,9 @@ const changePassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to change password."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to change password.",
     });
   }
 };

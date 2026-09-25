@@ -103,14 +103,27 @@ const protect = async (req, res, next) => {
       decoded.mustChangePassword = faculty.mustChangePassword;
     } else if (decoded.role === "Admin") {
       const admin = await Admin.findById(decoded.userId)
-        .select("_id")
+        .select("_id isActive passwordChangedAt")
         .lean();
 
-      if (!admin) {
+      if (!admin || admin.isActive === false) {
         return res.status(401).json({
           success: false,
-          message: "Admin account not found.",
+          message: "Admin account is inactive, locked, or does not exist.",
         });
+      }
+
+      // Invalidate existing sessions/tokens after a password change or emergency lock
+      if (admin.passwordChangedAt) {
+        const changedTimestamp = Math.floor(
+          new Date(admin.passwordChangedAt).getTime() / 1000
+        );
+        if (decoded.iat && decoded.iat < changedTimestamp) {
+          return res.status(401).json({
+            success: false,
+            message: "Password was recently changed or session was revoked. Please login again.",
+          });
+        }
       }
     } else {
       return res.status(401).json({

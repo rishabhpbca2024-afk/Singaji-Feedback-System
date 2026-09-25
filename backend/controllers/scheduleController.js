@@ -502,6 +502,65 @@ const updateSchedule = async (req, res) => {
       });
     }
 
+    const isSlotModified = (newSlot, existingSlot) => {
+      if (!existingSlot || !newSlot) return false;
+      const normalize = (v) => String(v || "").trim();
+
+      if (newSlot.subject !== undefined && normalize(newSlot.subject) !== normalize(existingSlot.subject)) return true;
+      if (newSlot.facultyId !== undefined && normalize(newSlot.facultyId) !== normalize(existingSlot.facultyId)) return true;
+      if (!newSlot.facultyId && newSlot.facultyName !== undefined && normalize(newSlot.facultyName) !== normalize(existingSlot.facultyName)) return true;
+      if (newSlot.startTime !== undefined && normalize(newSlot.startTime) !== normalize(existingSlot.startTime)) return true;
+      if (newSlot.endTime !== undefined && normalize(newSlot.endTime) !== normalize(existingSlot.endTime)) return true;
+      return false;
+    };
+
+    // Prevent modifying slots whose feedback emails have already been dispatched
+    if (existingSchedule.slot1?.feedbackEmailSent && isSlotModified(slot1, existingSchedule.slot1)) {
+      return res.status(400).json({
+        success: false,
+        message: "Slot 1 cannot be modified because its feedback emails have already been sent to students.",
+      });
+    }
+
+    if (existingSchedule.slot2?.feedbackEmailSent && isSlotModified(slot2, existingSchedule.slot2)) {
+      return res.status(400).json({
+        success: false,
+        message: "Slot 2 cannot be modified because its feedback emails have already been sent to students.",
+      });
+    }
+
+    if (existingSchedule.slot3?.feedbackEmailSent && isSlotModified(slot3, existingSchedule.slot3)) {
+      return res.status(400).json({
+        success: false,
+        message: "Slot 3 cannot be modified because its feedback emails have already been sent to students.",
+      });
+    }
+
+    const anyEmailSent = Boolean(
+      existingSchedule.slot1?.feedbackEmailSent ||
+      existingSchedule.slot2?.feedbackEmailSent ||
+      existingSchedule.slot3?.feedbackEmailSent
+    );
+
+    if (anyEmailSent) {
+      if (className && className.trim() !== (existingSchedule.class || "").trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Class name cannot be modified after feedback emails have already been sent.",
+        });
+      }
+      if (Array.isArray(groups)) {
+        const sortedNew = [...groups].sort();
+        const sortedOld = [...(existingSchedule.groups || [])].sort();
+        if (JSON.stringify(sortedNew) !== JSON.stringify(sortedOld)) {
+          return res.status(400).json({
+            success: false,
+            message: "Student groups cannot be modified after feedback emails have already been sent.",
+          });
+        }
+      }
+    }
+
     const students = await Students.find({
       section: effectiveDepartment,
       level: { $in: groups },

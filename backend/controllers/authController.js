@@ -10,7 +10,14 @@ const {
   sendPasswordResetEmail,
   sendFacultyActivationEmail,
   sendPasswordSetConfirmationEmail,
+  sendAdminPasswordChangedAlertEmail,
 } = require("../utils/sendEmail");
+const {
+  checkAccountLock,
+  recordFailedLogin,
+  resetAccountLock,
+} = require("../utils/accountLockout");
+const { DUMMY_PASSWORD_HASH } = require("../config/security");
 
 const Login = async (req, res) => {
   try {
@@ -30,6 +37,19 @@ const Login = async (req, res) => {
 
     const normalizedGmail = gmail.toLowerCase().trim();
 
+    // 0. CHECK ACCOUNT-LEVEL LOCKOUT (H-3)
+    const lockStatus = await checkAccountLock(normalizedGmail);
+    if (lockStatus.isLocked) {
+      const minutes = lockStatus.remainingMinutes || 15;
+      const minutesText = minutes === 1 ? "1 minute" : `${minutes} minutes`;
+
+      return res.status(429).json({
+        success: false,
+        message: `Too many failed login attempts for this account. Please try again after ${minutesText}.`,
+        remainingMinutes: minutes,
+      });
+    }
+
     // ==========================================
     // 1. CHECK ADMIN 
     // ==========================================
@@ -45,11 +65,32 @@ const Login = async (req, res) => {
       );
 
       if (!isPasswordValid) {
+        const failStatus = await recordFailedLogin(normalizedGmail, req.ip);
+        if (failStatus && failStatus.isLocked) {
+          const minutes = failStatus.remainingMinutes || 15;
+          const minutesText = minutes === 1 ? "1 minute" : `${minutes} minutes`;
+          return res.status(429).json({
+            success: false,
+            message: `Too many failed login attempts for this account. Please try again after ${minutesText}.`,
+            remainingMinutes: minutes,
+          });
+        }
+
         return res.status(401).json({
           success: false,
           message: "Invalid Gmail or password",
         });
       }
+
+      if (admin.isActive === false) {
+        return res.status(403).json({
+          success: false,
+          message: "Admin account is temporarily locked for security. Please use the emergency link sent to your Gmail or reset your password to unlock.",
+        });
+      }
+
+      // Successful login resets any accumulated failure counter
+      await resetAccountLock(normalizedGmail);
 
       const token = jwt.sign(
         {
@@ -59,6 +100,7 @@ const Login = async (req, res) => {
         process.env.JWT_SECRET,
         {
           expiresIn: "1h",
+          algorithm: "HS256",
         }
       );
 
@@ -94,30 +136,16 @@ const Login = async (req, res) => {
     });
 
     if (faculty) {
-      if (faculty.isActive === false) {
-        return res.status(403).json({
-          success: false,
-          message: "Faculty account is inactive",
-        });
-      }
-
-      // Check account activation (R-6)
       const isPendingActivation =
         faculty.isActivated === false &&
-        (faculty.activationToken || !faculty.password);
+        (Boolean(faculty.activationToken) || !faculty.password);
 
-      if (isPendingActivation) {
-        return res.status(403).json({
-          success: false,
-          message:
-            "Your faculty account is not activated yet. Please check your email to activate your account and set your password.",
-        });
-      }
-
-      if (!faculty.password) {
+      if (faculty.isActive === false || isPendingActivation || !faculty.password) {
+        await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
+        await recordFailedLogin(normalizedGmail, req.ip);
         return res.status(401).json({
           success: false,
-          message: "No password set for this account. Please activate your account first.",
+          message: "Invalid Gmail or password",
         });
       }
 
@@ -127,11 +155,25 @@ const Login = async (req, res) => {
       );
 
       if (!isPasswordValid) {
+        const failStatus = await recordFailedLogin(normalizedGmail, req.ip);
+        if (failStatus && failStatus.isLocked) {
+          const minutes = failStatus.remainingMinutes || 15;
+          const minutesText = minutes === 1 ? "1 minute" : `${minutes} minutes`;
+          return res.status(429).json({
+            success: false,
+            message: `Too many failed login attempts for this account. Please try again after ${minutesText}.`,
+            remainingMinutes: minutes,
+          });
+        }
+
         return res.status(401).json({
           success: false,
           message: "Invalid Gmail or password",
         });
       }
+
+      // Successful login resets any accumulated failure counter
+      await resetAccountLock(normalizedGmail);
 
       const token = jwt.sign(
         {
@@ -141,6 +183,7 @@ const Login = async (req, res) => {
         process.env.JWT_SECRET,
         {
           expiresIn: "1h",
+          algorithm: "HS256",
         }
       );
 
@@ -161,7 +204,6 @@ const Login = async (req, res) => {
           role: "Faculty",
           message: "Please change your password before continuing.",
           mustChangePassword: true,
-          token,
           user: {
             id: faculty._id,
             facultyId: faculty.facultyId,
@@ -180,7 +222,6 @@ const Login = async (req, res) => {
         role: "Faculty",
         message: "Faculty login successful",
         mustChangePassword: false,
-        token,
         user: {
           id: faculty._id,
           facultyId: faculty.facultyId,
@@ -197,6 +238,19 @@ const Login = async (req, res) => {
     // ==========================================
     // 3. NEITHER ADMIN NOR FACULTY
     // ==========================================
+
+    await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
+
+    const failStatus = await recordFailedLogin(normalizedGmail, req.ip);
+    if (failStatus && failStatus.isLocked) {
+      const minutes = failStatus.remainingMinutes || 15;
+      const minutesText = minutes === 1 ? "1 minute" : `${minutes} minutes`;
+      return res.status(429).json({
+        success: false,
+        message: `Too many failed login attempts for this account. Please try again after ${minutesText}.`,
+        remainingMinutes: minutes,
+      });
+    }
 
     return res.status(401).json({
       success: false,
@@ -250,13 +304,13 @@ const forgotPassword = async (req, res) => {
       faculty.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
       await faculty.save();
 
-      const frontendUrl = process.env.FRONTEND_URL
+      const frontendUrl = (process.env.FRONTEND_URL
         ? (process.env.FRONTEND_URL.startsWith("http")
-            ? process.env.FRONTEND_URL
-            : `https://${process.env.FRONTEND_URL}`)
-        : "http://localhost:5173";
+          ? process.env.FRONTEND_URL
+          : `https://${process.env.FRONTEND_URL}`)
+        : "http://localhost:5173").replace(/\/$/, "");
 
-      const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(rawToken)}`;
+      const resetUrl = `${frontendUrl}/reset-password#token=${encodeURIComponent(rawToken)}`;
 
       try {
         await sendPasswordResetEmail({
@@ -284,9 +338,9 @@ const forgotPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to process forgot password request."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to process forgot password request.",
     });
   }
 };
@@ -369,15 +423,15 @@ const resetPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to reset password."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to reset password.",
     });
   }
 };
 
 // ==========================================
-// ADMIN CHANGE PASSWORD (SIMPLE & AT-WILL)
+// ADMIN CHANGE PASSWORD (WITH STRONG VALIDATION, SESSION INVALIDATION & EMAIL ALERT)
 // ==========================================
 
 const changeAdminPassword = async (req, res) => {
@@ -408,10 +462,12 @@ const changeAdminPassword = async (req, res) => {
       });
     }
 
-    if (newPassword.length < 6) {
+    // Institutional Password Complexity Validation
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
       return res.status(400).json({
         success: false,
-        message: "New password must be at least 6 characters long.",
+        message: passwordValidation.message,
       });
     }
 
@@ -432,12 +488,74 @@ const changeAdminPassword = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const changeTimestamp = new Date();
+
+    // Generate 32-byte emergency security lock token (valid for 48 hours)
+    const rawLockToken = crypto.randomBytes(32).toString("hex");
+    const hashedLockToken = crypto
+      .createHash("sha256")
+      .update(rawLockToken)
+      .digest("hex");
+
     admin.password = hashedPassword;
+    admin.passwordChangedAt = changeTimestamp;
+    admin.securityLockToken = hashedLockToken;
+    admin.securityLockExpires = new Date(Date.now() + 48 * 60 * 60 * 1000);
     await admin.save();
+
+    // Re-issue cookie for this active admin session so they remain logged in
+    const token = jwt.sign(
+      {
+        userId: admin._id,
+        role: "Admin",
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+        algorithm: "HS256",
+      }
+    );
+
+    const isProduction = process.env.NODE_ENV === "production";
+    const encryptedToken = encryptToken(token);
+
+    res.cookie("accessToken", encryptedToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 60 * 60 * 1000,
+    });
+
+    // Send security alert email with emergency lock link
+    let frontendUrl = "http://localhost:5173";
+    if (process.env.NODE_ENV === "production" && process.env.FRONTEND_URL) {
+      frontendUrl = (process.env.FRONTEND_URL.startsWith("http")
+        ? process.env.FRONTEND_URL
+        : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "");
+    } else if (req.headers.origin) {
+      frontendUrl = req.headers.origin.replace(/\/$/, "");
+    } else if (process.env.FRONTEND_URL) {
+      frontendUrl = (process.env.FRONTEND_URL.startsWith("http")
+        ? process.env.FRONTEND_URL
+        : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "");
+    }
+
+    const lockUrl = `${frontendUrl}/admin/security-lock#token=${encodeURIComponent(rawLockToken)}`;
+
+    try {
+      await sendAdminPasswordChangedAlertEmail({
+        to: admin.gmail,
+        adminName: admin.username,
+        lockUrl,
+        timestamp: changeTimestamp,
+      });
+    } catch (emailErr) {
+      console.error("[ADMIN SECURITY ALERT EMAIL FAILED]:", emailErr.message);
+    }
 
     return res.status(200).json({
       success: true,
-      message: "Admin password changed successfully.",
+      message: "Admin password changed successfully. A security notification has been sent to your registered Gmail.",
     });
   } catch (error) {
     console.error("Admin change password error:", error);
@@ -445,9 +563,9 @@ const changeAdminPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to change admin password."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to change admin password.",
     });
   }
 };
@@ -476,9 +594,9 @@ const logout = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to logout."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to logout.",
     });
   }
 };
@@ -574,9 +692,9 @@ const activateFacultyAccount = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to activate account."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to activate account.",
     });
   }
 };
@@ -617,13 +735,13 @@ const resendActivationLink = async (req, res) => {
       faculty.activationTokenExpires = new Date(Date.now() + 48 * 60 * 60 * 1000);
       await faculty.save();
 
-      const frontendUrl = process.env.FRONTEND_URL
+      const frontendUrl = (process.env.FRONTEND_URL
         ? (process.env.FRONTEND_URL.startsWith("http")
-            ? process.env.FRONTEND_URL
-            : `https://${process.env.FRONTEND_URL}`)
-        : "http://localhost:5173";
+          ? process.env.FRONTEND_URL
+          : `https://${process.env.FRONTEND_URL}`)
+        : "http://localhost:5173").replace(/\/$/, "");
 
-      const activationUrl = `${frontendUrl}/activate-account?token=${encodeURIComponent(rawToken)}`;
+      const activationUrl = `${frontendUrl}/activate-account#token=${encodeURIComponent(rawToken)}`;
 
       try {
         await sendFacultyActivationEmail({
@@ -652,9 +770,154 @@ const resendActivationLink = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === "production"
-          ? "Failed to process request."
-          : error.message,
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to process request.",
+    });
+  }
+};
+
+// ==========================================
+// ADMIN EMERGENCY LOCK (TRIGGERED FROM EMAIL LINK)
+// ==========================================
+
+const adminEmergencyLock = async (req, res) => {
+  try {
+    const { token } = req.body || {};
+
+    if (!token || typeof token !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Emergency security token is required.",
+      });
+    }
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token.trim())
+      .digest("hex");
+
+    const admin = await Admin.findOne({
+      securityLockToken: hashedToken,
+      securityLockExpires: { $gt: new Date() },
+    });
+
+    if (!admin) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid, expired, or already used security emergency link.",
+      });
+    }
+
+    // 1. Immediately freeze account & invalidate all active sessions
+    const emergencyTimestamp = new Date();
+    const rawResetToken = crypto.randomBytes(32).toString("hex");
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(rawResetToken)
+      .digest("hex");
+
+    admin.isActive = false;
+    admin.passwordChangedAt = emergencyTimestamp;
+    admin.securityLockToken = null;
+    admin.securityLockExpires = null;
+    admin.resetPasswordToken = hashedResetToken;
+    admin.resetPasswordExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes to complete recovery
+    await admin.save();
+
+    // Clear session cookies if any
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Account has been successfully locked and all sessions terminated. Please set a new secure password.",
+      resetToken: rawResetToken,
+      adminGmail: admin.gmail,
+    });
+  } catch (error) {
+    console.error("Admin emergency lock error:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to lock account.",
+    });
+  }
+};
+
+// ==========================================
+// ADMIN EMERGENCY RESET PASSWORD
+// ==========================================
+
+const adminEmergencyReset = async (req, res) => {
+  try {
+    const { resetToken, newPassword } = req.body || {};
+
+    if (!resetToken || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset token and new password are required.",
+      });
+    }
+
+    if (typeof resetToken !== "string" || typeof newPassword !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payload format.",
+      });
+    }
+
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: passwordValidation.message,
+      });
+    }
+
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken.trim())
+      .digest("hex");
+
+    const admin = await Admin.findOne({
+      resetPasswordToken: hashedResetToken,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+
+    if (!admin) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired recovery session. Please use the link from your email again.",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    admin.password = hashedPassword;
+    admin.isActive = true;
+    admin.passwordChangedAt = new Date();
+    admin.resetPasswordToken = null;
+    admin.resetPasswordExpires = null;
+    await admin.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully and your account has been unlocked. You may now log in.",
+    });
+  } catch (error) {
+    console.error("Admin emergency reset error:", error);
+    return res.status(500).json({
+      success: false,
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to reset password.",
     });
   }
 };
@@ -667,4 +930,6 @@ module.exports = {
   changeAdminPassword,
   activateFacultyAccount,
   resendActivationLink,
-};
+  adminEmergencyLock,
+  adminEmergencyReset,
+};

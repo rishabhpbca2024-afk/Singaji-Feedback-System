@@ -47,18 +47,14 @@ const loginIpLimiter = rateLimit({
 // Ye email + IP ke basis par limit karega
 // Isliye Gmail A block hone par Gmail B block nahi hoga.
 
+const { checkAccountLock } = require("../utils/accountLockout");
+
 const loginAccountLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 5, // Maximum 5 FAILED login attempts
+  limit: 20, // Outer DoS protection envelope; strict attempt threshold is managed by database-level AccountLockout
 
   standardHeaders: "draft-8",
   legacyHeaders: false,
-
-  message: {
-    success: false,
-    message:
-      "Too many failed login attempts for this account. Please try again after 15 minutes.",
-  },
 
   skipSuccessfulRequests: false,
 
@@ -72,6 +68,21 @@ const loginAccountLimiter = rateLimit({
     return `${email}:${ip}`;
   },
 
+  handler: async (req, res) => {
+    const email = String(req.body?.gmail || req.body?.email || "")
+      .trim()
+      .toLowerCase();
+
+    const lockStatus = await checkAccountLock(email);
+    const minutes = lockStatus.isLocked && lockStatus.remainingMinutes ? lockStatus.remainingMinutes : 15;
+    const minutesText = minutes === 1 ? "1 minute" : `${minutes} minutes`;
+
+    return res.status(429).json({
+      success: false,
+      message: `Too many failed login attempts for this account. Please try again after ${minutesText}.`,
+      remainingMinutes: minutes,
+    });
+  },
 });
 
 // ==========================================

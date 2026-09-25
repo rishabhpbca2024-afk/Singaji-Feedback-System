@@ -1,5 +1,7 @@
 const Feedback = require('../models/Feedback');
+const FeedbackSubmission = require('../models/FeedbackSubmission');
 const SelectedStudents = require('../models/SeletedStudents');
+const { hashStudentEmail } = require('../utils/hashUtils');
 
 // @desc    Get complete reports
 // @route   GET /api/reports
@@ -29,17 +31,40 @@ const getOverallReport = async (req, res) => {
     // =========================================================
     const designatedStudents = await SelectedStudents.distinct('gmail');
 
-    const submittedStudents = await Feedback.distinct(
-      'studentGmail',
+    // Get submitted student hashes from FeedbackSubmission (anonymous architecture)
+    const submittedHashes = await FeedbackSubmission.distinct(
+      'studentHash',
       dateFilter
     );
 
-    const submittedDesignatedStudents = submittedStudents.filter((gmail) =>
-      designatedStudents.includes(gmail)
+    // Map designated students' emails to their HMAC hashes
+    const designatedHashes = new Set(
+      designatedStudents.map((gmail) => hashStudentEmail(gmail))
     );
 
+    const submittedDesignatedFromSubmissions = submittedHashes.filter((hash) =>
+      designatedHashes.has(hash)
+    );
+
+    // Backward compatibility: also check legacy Feedback documents if any have studentGmail
+    let submittedDesignatedFromLegacy = [];
+    try {
+      const legacySubmittedGmails = await Feedback.distinct('studentGmail', {
+        ...dateFilter,
+        studentGmail: { $exists: true, $ne: null },
+      });
+      submittedDesignatedFromLegacy = legacySubmittedGmails.filter((gmail) =>
+        designatedStudents.includes(gmail)
+      );
+    } catch {
+      // Legacy check safe fallback
+    }
+
     const totalDesignatedStudents = designatedStudents.length;
-    const totalSubmittedStudents = submittedDesignatedStudents.length;
+    const totalSubmittedStudents = Math.max(
+      submittedDesignatedFromSubmissions.length,
+      submittedDesignatedFromLegacy.length
+    );
 
     const feedbackCompletion =
       totalDesignatedStudents > 0
@@ -353,9 +378,9 @@ const getOverallReport = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        process.env.NODE_ENV === 'production'
-          ? 'Failed to fetch overall report'
-          : error.message,
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : 'Failed to fetch overall report',
     });
   }
 };

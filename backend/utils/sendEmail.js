@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const escapeHtml = require("escape-html");
 const MailComposer = require("nodemailer/lib/mail-composer");
 const FeedbackToken = require("../models/FeedbackToken");
+const { maskEmail } = require("./hashUtils");
 
 // =====================================================
 // GMAIL API AUTH
@@ -139,9 +140,16 @@ const sendFeedbackLinkEmail = async (
     // 4. FEEDBACK URL
     // ==========================================
 
+    const frontendBaseUrl = (
+      process.env.FRONTEND_URL
+        ? (process.env.FRONTEND_URL.startsWith("http")
+            ? process.env.FRONTEND_URL
+            : `https://${process.env.FRONTEND_URL}`)
+        : "https://singaji-feedback-system.vercel.app"
+    ).replace(/\/$/, "");
+
     const feedbackUrl =
-      `${process.env.FRONTEND_URL}/student/feedback` +
-      `?token=${encodeURIComponent(rawToken)}`;
+      `${frontendBaseUrl}/student/feedback#token=${encodeURIComponent(rawToken)}`;
 
     // ==========================================
     // 5. HTML EMAIL (DYNAMIC VALUES ESCAPED)
@@ -209,7 +217,7 @@ const sendFeedbackLinkEmail = async (
     });
 
     console.log(
-      `[EMAIL SENT] To: ${normalizedEmail}`
+      `[EMAIL SENT] To: ${maskEmail(normalizedEmail)}`
     );
 
     console.log(
@@ -566,10 +574,207 @@ const sendPasswordSetConfirmationEmail = async ({
   }
 };
 
+// =====================================================
+// SEND ADMIN SECURITY ALERT EMAIL
+// =====================================================
+
+const sendAdminPasswordChangedAlertEmail = async ({
+  to,
+  adminName,
+  lockUrl,
+  timestamp,
+}) => {
+  try {
+    const safeAdminName = escapeHtml(String(adminName || "Administrator").trim());
+    const formattedDate = new Date(timestamp || Date.now()).toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "full",
+      timeStyle: "medium",
+    });
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
+        <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; padding: 14px 18px; margin-bottom: 24px; border-radius: 4px;">
+          <h2 style="color: #991b1b; margin: 0 0 6px 0; font-size: 20px;">
+            🚨 Security Alert: Admin Password Changed
+          </h2>
+          <p style="margin: 0; color: #7f1d1d; font-size: 14px;">
+            The password for your Singaji Feedback System Administrator account was recently changed.
+          </p>
+        </div>
+
+        <p style="color: #334155; font-size: 15px;">Dear <strong>${safeAdminName}</strong>,</p>
+        <p style="color: #334155; font-size: 15px; line-height: 1.5;">
+          This is an automated institutional security notification to inform you that your administrator password was changed on:
+        </p>
+
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px 18px; margin: 18px 0; font-family: monospace; font-size: 14px; color: #1e293b;">
+          <strong>Time of Change:</strong> ${formattedDate} (IST)
+        </div>
+
+        <div style="margin: 24px 0; padding: 16px; background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;">
+          <p style="margin: 0; color: #166534; font-size: 14px;">
+            ✅ <strong>Was this you?</strong><br>
+            If you recently changed your password yourself, you can safely disregard this email. Your new password is now active and prior sessions on other devices have been securely invalidated.
+          </p>
+        </div>
+
+        <div style="margin: 24px 0; padding: 16px; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;">
+          <p style="margin: 0 0 14px 0; color: #991b1b; font-size: 14px; font-weight: bold;">
+            ❌ Did NOT change your password?
+          </p>
+          <p style="margin: 0 0 16px 0; color: #7f1d1d; font-size: 13px; line-height: 1.5;">
+            If you did not initiate this change, someone may have compromised your administrative credentials. Click below immediately to freeze your account, kill all unauthorized active sessions, and reclaim your account with a fresh password:
+          </p>
+          <div style="text-align: center; margin: 18px 0;">
+            <a href="${lockUrl}" style="background-color: #dc2626; color: #ffffff; padding: 13px 26px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);">
+              🚨 No, This Wasn't Me — Lock Account & Reset
+            </a>
+          </div>
+          <p style="margin: 12px 0 0 0; color: #64748b; font-size: 12px; word-break: break-all;">
+            Or copy and paste this emergency link into your browser:<br>
+            <a href="${lockUrl}" style="color: #dc2626;">${lockUrl}</a>
+          </p>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 12px; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 14px; text-align: center;">
+          Singaji Institute of Science and Management &bull; Automated Security Dispatcher
+        </p>
+      </div>
+    `;
+
+    const rawMessage = await createRawMessage({
+      from: process.env.MAIL_USER,
+      to: String(to || "").trim(),
+      subject: `🚨 SECURITY ALERT: Admin Password Changed - Singaji Feedback System`,
+      html,
+    });
+
+    const response = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: rawMessage,
+      },
+    });
+
+    console.log(`[ADMIN SECURITY ALERT EMAIL SENT] To: ${to}, Message ID: ${response.data.id}`);
+
+    return {
+      success: true,
+      messageId: response.data.id,
+    };
+  } catch (error) {
+    console.error(
+      "[GMAIL API ADMIN SECURITY ALERT ERROR]:",
+      error.response?.data || error.message
+    );
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message,
+    };
+  }
+};
+
+// =====================================================
+// SEND BRUTE FORCE LOCKOUT ALERT EMAIL
+// =====================================================
+
+const sendBruteForceAlertEmail = async ({
+  to,
+  targetedEmail,
+  failedAttempts,
+  lockDurationMinutes,
+  clientIp,
+  timestamp,
+}) => {
+  try {
+    const safeTargetedEmail = escapeHtml(String(targetedEmail || "").trim());
+    const safeIp = escapeHtml(String(clientIp || "Unknown IP").trim());
+    const formattedDate = new Date(timestamp || Date.now()).toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "full",
+      timeStyle: "medium",
+    });
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
+        <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 14px 18px; margin-bottom: 20px; border-radius: 4px;">
+          <h2 style="color: #991b1b; margin: 0 0 6px 0; font-size: 18px;">
+            ⚠️ Suspicious Activity Alert: Account Locked Due to Repeated Failed Logins
+          </h2>
+          <p style="margin: 0; color: #7f1d1d; font-size: 13px;">
+            Institutional security defense has temporarily locked an account to prevent brute force access.
+          </p>
+        </div>
+
+        <p style="color: #334155; font-size: 14px; line-height: 1.5;">
+          The Singaji Feedback System detected multiple consecutive failed login attempts targeting the following account:
+        </p>
+
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px 18px; margin: 18px 0; font-size: 13px; color: #1e293b;">
+          <p style="margin: 4px 0;"><strong>Targeted Email:</strong> ${safeTargetedEmail}</p>
+          <p style="margin: 4px 0;"><strong>Failed Attempts:</strong> ${Number(failedAttempts) || 5}</p>
+          <p style="margin: 4px 0;"><strong>Lockout Duration:</strong> ${Number(lockDurationMinutes) || 15} minutes</p>
+          <p style="margin: 4px 0;"><strong>Last Source IP:</strong> ${safeIp}</p>
+          <p style="margin: 4px 0;"><strong>Timestamp:</strong> ${formattedDate} (IST)</p>
+        </div>
+
+        <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
+          <p style="margin: 0; color: #166534; font-size: 13px;">
+            <strong>System Action Taken:</strong> The account has been temporarily locked at the database level. All further login attempts will be automatically rejected until the lockout expires or a valid credential is submitted.
+          </p>
+        </div>
+
+        <p style="color: #94a3b8; font-size: 12px; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: center;">
+          Singaji Institute of Science and Management &bull; Automated Intrusion Defense
+        </p>
+      </div>
+    `;
+
+    const recipient = String(to || process.env.MAIL_USER || "").trim();
+    if (!recipient) {
+      console.warn("[BRUTE FORCE ALERT] No recipient email specified.");
+      return { success: false, message: "No recipient specified." };
+    }
+
+    const rawMessage = await createRawMessage({
+      from: process.env.MAIL_USER,
+      to: recipient,
+      subject: `⚠️ SECURITY ALERT: Account Locked Due to Failed Logins (${safeTargetedEmail})`,
+      html,
+    });
+
+    const response = await gmail.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: rawMessage,
+      },
+    });
+
+    console.log(`[BRUTE FORCE ALERT EMAIL SENT] To: ${recipient}, Message ID: ${response.data.id}`);
+
+    return {
+      success: true,
+      messageId: response.data.id,
+    };
+  } catch (error) {
+    console.error(
+      "[GMAIL API BRUTE FORCE ALERT ERROR]:",
+      error.response?.data || error.message
+    );
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message,
+    };
+  }
+};
+
 module.exports = {
   sendFeedbackLinkEmail,
   sendFacultyCredentialsEmail,
   sendPasswordResetEmail,
   sendFacultyActivationEmail,
   sendPasswordSetConfirmationEmail,
+  sendAdminPasswordChangedAlertEmail,
+  sendBruteForceAlertEmail,
 };

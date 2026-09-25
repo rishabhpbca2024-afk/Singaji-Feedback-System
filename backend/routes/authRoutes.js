@@ -13,6 +13,8 @@ const {
   changeAdminPassword,
   activateFacultyAccount,
   resendActivationLink,
+  adminEmergencyLock,
+  adminEmergencyReset,
 } = require('../controllers/authController');
 const { protect, authorize } = require("../middleware/authMiddleware");
 
@@ -27,8 +29,11 @@ router.post("/reset-password", passwordResetLimiter, resetPassword);
 router.post("/activate-account", activateFacultyAccount);
 router.post("/resend-activation", activationResendLimiter, resendActivationLink);
 
+// Admin Emergency Security Lockdown & Recovery
+router.post("/admin-emergency-lock", passwordResetLimiter, adminEmergencyLock);
+router.post("/admin-emergency-reset", passwordResetLimiter, adminEmergencyReset);
 
-// Admin simple change password route (optional, at-will)
+// Admin change password route (with strong validation, session invalidation & security alert)
 router.post(
   "/admin/change-password",
   protect,

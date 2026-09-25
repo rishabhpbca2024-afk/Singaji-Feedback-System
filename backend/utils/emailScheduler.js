@@ -2,6 +2,7 @@ const cron = require("node-cron");
 const Schedule = require("../models/Schedule");
 const { sendFeedbackLinkEmail } = require("./sendEmail");
 const SelectedStudents = require("../models/SeletedStudents");
+const { maskEmail } = require("./hashUtils");
 
 // ==========================================
 // TIME -> MINUTES
@@ -89,14 +90,34 @@ const processSlot = async (schedule, slotName) => {
             return;
         }
 
-        // Already sent
+        // Already sent check
         if (slot.feedbackEmailSent === true) {
             return;
         }
 
+        // Atomic lock claim: Claim this slot in MongoDB before sending.
+        // Prevents duplicate emails when multiple server instances (e.g. Render cloud + Localhost dev) run concurrently.
+        const claimPath = `${slotName}.feedbackEmailSent`;
+        const claimed = await Schedule.findOneAndUpdate(
+            {
+                _id: schedule._id,
+                [claimPath]: { $ne: true },
+            },
+            {
+                $set: {
+                    [claimPath]: true,
+                },
+            },
+            { new: true }
+        );
+
+        if (!claimed) {
+            return; // Already sent or claimed by another server instance
+        }
+
         console.log("==========================================");
         console.log(
-            `[SCHEDULER] ${slotName} lecture ended`
+            `[SCHEDULER] ${slotName} lecture ended (claimed by this instance)`
         );
         console.log(`Faculty: ${slot.facultyName}`);
         console.log(`Subject: ${slot.subject}`);
@@ -133,7 +154,7 @@ const processSlot = async (schedule, slotName) => {
 
         for (const student of students) {
             console.log(
-                `[SCHEDULER] Sending feedback email to ${student.gmail}`
+                `[SCHEDULER] Sending feedback email to ${maskEmail(student.gmail)}`
             );
 
            const result = await sendFeedbackLinkEmail(
@@ -154,36 +175,24 @@ const processSlot = async (schedule, slotName) => {
         }
 
         // ==========================================
-        // MARK EMAIL AS SENT
+        // SUMMARY & ROLLBACK IF TOTAL FAILURE
         // ==========================================
 
-        if (successCount === students.length) {
-            const updatePath = `${slotName}.feedbackEmailSent`;
-
-            await Schedule.findByIdAndUpdate(
-                schedule._id,
-                {
-                    $set: {
-                        [updatePath]: true,
-                    },
-                }
-            );
-
+        if (successCount === 0 && students.length > 0) {
+            // All emails failed, rollback claim so it can retry
+            await Schedule.findByIdAndUpdate(schedule._id, {
+                $set: { [claimPath]: false },
+            });
+            console.log("==========================================");
+            console.log(`[SCHEDULER] All emails failed for ${slotName}, rolled back claim for retry.`);
+            console.log("==========================================");
+        } else {
             console.log("==========================================");
             console.log(
                 `[SCHEDULER] Feedback emails sent: ${successCount}/${students.length}`
             );
             console.log(
                 `[SCHEDULER] ${slotName} marked as completed`
-            );
-            console.log("==========================================");
-        } else {
-            console.log("==========================================");
-            console.log(
-                `[SCHEDULER] Email sending incomplete: ${successCount}/${students.length}`
-            );
-            console.log(
-                "[SCHEDULER] Will retry on next scheduler check."
             );
             console.log("==========================================");
         }

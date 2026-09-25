@@ -252,28 +252,87 @@
 }
 
 .success-icon {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   background: #ecfdf5;
   color: #10b981;
-  font-size: 36px;
-  font-weight: bold;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px auto;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+  margin: 0 auto 20px auto;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+}
+
+.success-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+
+.success-desc {
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto 22px auto;
+}
+
+.success-summary-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  max-width: 440px;
+  margin: 0 auto 20px auto;
+  text-align: left;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.anon-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.success-action-group {
+  margin-top: 10px;
 }
 
 .close-tab-btn {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
   color: #ffffff !important;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 14px 32px;
+  padding: 12px 28px;
   border: none;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -281,7 +340,6 @@
   gap: 8px;
   transition: all 0.25s ease;
   box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
-  margin-top: 16px;
 }
 
 .close-tab-btn:hover {
@@ -290,12 +348,12 @@
 }
 
 .close-tab-note {
-  margin-top: 18px;
+  margin-top: 16px;
   font-size: 13px;
   color: #64748b;
-  background: #f1f5f9;
-  padding: 10px 16px;
-  border-radius: 10px;
+  background: #f8fafc;
+  padding: 8px 14px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
   display: inline-block;
 }

@@ -1,11 +1,13 @@
 
 const Feedback = require("../models/Feedback");
+const FeedbackSubmission = require("../models/FeedbackSubmission");
 const Schedule = require("../models/Schedule");
 const SelectedStudents = require('../models/SeletedStudents');
 const crypto = require("crypto");
 const FeedbackToken = require("../models/FeedbackToken");
 const Faculty = require("../models/Faculty");
 const { safeErrorMessage } = require("../utils/errorHandler");
+const { hashStudentEmail } = require("../utils/hashUtils");
 
 // SUBMIT FEEDBACK
 
@@ -20,17 +22,23 @@ const submitFeedback = async (req, res) => {
     console.log("======================================");
     console.log("FEEDBACK SUBMISSION REQUEST");
     console.log("Token received:", !!token);
-    console.log("Metrics:", metrics);
     console.log("======================================");
 
     // =====================================================
-    // 1. REQUIRED DATA VALIDATION
+    // 1. REQUIRED DATA VALIDATION (M-4)
     // =====================================================
 
-    if (!token || !metrics) {
+    if (!token || typeof token !== "string" || !token.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Feedback token and metrics are required.",
+        message: "Valid feedback token is required.",
+      });
+    }
+
+    if (!metrics || typeof metrics !== "object" || Array.isArray(metrics)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid metrics object is required.",
       });
     }
 
@@ -46,15 +54,35 @@ const submitFeedback = async (req, res) => {
     for (const metric of requiredMetrics) {
       const value = metrics[metric];
 
+      const numValue = Number(value);
       if (
         value === undefined ||
         value === null ||
-        Number(value) < 1 ||
-        Number(value) > 5
+        !Number.isInteger(numValue) ||
+        numValue < 1 ||
+        numValue > 5
       ) {
         return res.status(400).json({
           success: false,
-          message: `Invalid or missing rating for ${metric}.`,
+          message: `Invalid rating for ${metric}. Must be an integer between 1 and 5.`,
+        });
+      }
+    }
+
+    // Validate remarks (optional, capped at 1000 characters)
+    let cleanRemarks = "";
+    if (remarks !== undefined && remarks !== null) {
+      if (typeof remarks !== "string") {
+        return res.status(400).json({
+          success: false,
+          message: "Remarks must be a valid text string.",
+        });
+      }
+      cleanRemarks = remarks.trim();
+      if (cleanRemarks.length > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: "Remarks must not exceed 1000 characters.",
         });
       }
     }
@@ -63,9 +91,10 @@ const submitFeedback = async (req, res) => {
     // 2. HASH TOKEN
     // =====================================================
 
+    const cleanToken = token.trim();
     const tokenHash = crypto
       .createHash("sha256")
-      .update(token)
+      .update(cleanToken)
       .digest("hex");
 
     // =====================================================
@@ -175,26 +204,22 @@ const submitFeedback = async (req, res) => {
       selectedStudent.section ||
       "";
 
-    console.log("Student Gmail:", normalizedGmail);
-    console.log("Student Level:", studentLevel);
-    console.log("Student Section:", studentSection);
-    console.log("Faculty:", facultyName);
-    console.log("Subject:", subject);
+    console.log("Processing submission for Faculty:", facultyName, "Subject:", subject);
 
     // =====================================================
-    // 7. CHECK DUPLICATE FEEDBACK
+    // 7. CHECK DUPLICATE FEEDBACK (via HMAC studentHash)
     // =====================================================
 
-    const existingFeedback =
-      await Feedback.findOne({
-        studentGmail: normalizedGmail,
-        facultyId,
-        facultyName,
-        subject,
-        lectureEndTime,
-      });
+    const studentHash = hashStudentEmail(normalizedGmail);
 
-    if (existingFeedback) {
+    const existingSubmission = await FeedbackSubmission.findOne({
+      studentHash,
+      facultyId,
+      subject,
+      lectureEndTime,
+    });
+
+    if (existingSubmission) {
       return res.status(400).json({
         success: false,
         message:
@@ -203,13 +228,41 @@ const submitFeedback = async (req, res) => {
     }
 
     // =====================================================
-    // 8. SAVE FEEDBACK
+    // 8. ATOMICALLY RECORD SUBMISSION & ANONYMOUS FEEDBACK
     // =====================================================
+
+    let feedbackSubmission;
+    try {
+      feedbackSubmission = await FeedbackSubmission.create({
+        studentHash,
+        facultyId,
+        subject,
+        lectureEndTime,
+        department,
+        level: studentLevel,
+        section: studentSection,
+      });
+    } catch (subErr) {
+      if (subErr.code === 11000) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "You have already submitted feedback for this lecture.",
+        });
+      }
+
+      // Revert token consumption if submission tracking fails
+      await FeedbackToken.findByIdAndUpdate(feedbackToken._id, {
+        $set: { usedAt: null },
+      });
+
+      throw subErr;
+    }
 
     let feedback;
     try {
+      // Feedback is stored WITHOUT student identity (anonymous secret ballot)
       feedback = await Feedback.create({
-        studentGmail: normalizedGmail,
         level: studentLevel,
         // IMPORTANT: Existing reporting code treats feedback.section as department.
         section: department,
@@ -225,20 +278,14 @@ const submitFeedback = async (req, res) => {
           Resolution: Number(metrics.Resolution),
           Overall: Number(metrics.Overall),
         },
-        remarks: remarks
-          ? remarks.trim()
-          : "",
+        remarks: cleanRemarks,
       });
     } catch (createErr) {
-      if (createErr.code === 11000) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "You have already submitted feedback for this lecture.",
-        });
+      // Rollback submission record and token consumption if feedback creation fails
+      if (feedbackSubmission?._id) {
+        await FeedbackSubmission.findByIdAndDelete(feedbackSubmission._id).catch(() => {});
       }
 
-      // Rollback token consumption if creation fails unexpectedly
       await FeedbackToken.findByIdAndUpdate(feedbackToken._id, {
         $set: { usedAt: null },
       });
@@ -247,11 +294,11 @@ const submitFeedback = async (req, res) => {
     }
 
     // =====================================================
-    // 9. SUCCESS
+    // 9. SUCCESS (No PII or raw feedback returned)
     // =====================================================
 
     console.log(
-      "Feedback successfully saved:",
+      "Anonymous feedback successfully saved:",
       feedback._id
     );
 
@@ -262,7 +309,6 @@ const submitFeedback = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Feedback submitted successfully.",
-      feedback,
     });
 
 
@@ -289,16 +335,18 @@ const verifyFeedbackToken = async (req, res) => {
   try {
     const { token } = req.query;
 
-    if (!token) {
+    if (!token || typeof token !== "string" || !token.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Feedback token is required.",
+        message: "Valid feedback token is required.",
       });
     }
 
+    const cleanToken = token.trim();
+
     const tokenHash = crypto
       .createHash("sha256")
-      .update(token)
+      .update(cleanToken)
       .digest("hex");
 
     const feedbackToken =
@@ -549,9 +597,12 @@ const getFeedbackByFaculty = async (
 
     const feedbacks = await Feedback.find({
       facultyId,
-    }).sort({
-      timestamp: -1,
-    });
+    })
+      .select("-studentGmail")
+      .sort({
+        timestamp: -1,
+      })
+      .lean();
 
 
     const totalCount =

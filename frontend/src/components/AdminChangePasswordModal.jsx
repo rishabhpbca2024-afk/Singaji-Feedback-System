@@ -6,6 +6,7 @@ import {
   FiCheckCircle,
   FiAlertCircle,
   FiKey,
+  FiCheck,
 } from "react-icons/fi";
 import "./AdminChangePasswordModal.css";
 
@@ -26,6 +27,17 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
 
   if (!isOpen) return null;
 
+  // Real-time institutional validation checks
+  const rules = {
+    length: newPassword.length >= 8 && newPassword.length <= 128,
+    upper: /[A-Z]/.test(newPassword),
+    lower: /[a-z]/.test(newPassword),
+    number: /\d/.test(newPassword),
+    special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(newPassword),
+  };
+  const isPasswordValid = Object.values(rules).every(Boolean);
+  const passwordsMatch = newPassword.length > 0 && newPassword === confirmPassword;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -36,12 +48,12 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters long.");
+    if (!isPasswordValid) {
+      setError("Please ensure your new password satisfies all institutional security rules.");
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (!passwordsMatch) {
       setError("New password and confirm password do not match.");
       return;
     }
@@ -73,7 +85,7 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
         return;
       }
 
-      setSuccess("Admin password changed successfully!");
+      setSuccess("Admin password updated successfully! A security alert has been dispatched to your Gmail.");
 
       setTimeout(() => {
         setCurrentPassword("");
@@ -82,7 +94,7 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
         setSuccess("");
         if (onSuccess) onSuccess();
         if (onClose) onClose();
-      }, 1500);
+      }, 2000);
     } catch (err) {
       console.error("Admin change password error:", err);
       setError("Unable to connect to server. Please try again.");
@@ -112,7 +124,7 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
             </div>
             <div>
               <h2>Change Admin Password</h2>
-              <p>Update your administrator account password</p>
+              <p>Institutional security rules apply (Min. 8 characters)</p>
             </div>
           </div>
           <button
@@ -178,7 +190,7 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
               <input
                 id="admin-new-pwd"
                 type={showNew ? "text" : "password"}
-                placeholder="Enter new password (min. 6 characters)"
+                placeholder="Enter new strong password"
                 value={newPassword}
                 onChange={(e) => {
                   setNewPassword(e.target.value);
@@ -226,6 +238,31 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
             </div>
           </div>
 
+          {/* Password Requirements Checklist */}
+          <div className="admin-cp-checklist-box">
+            <span className="admin-cp-checklist-title">Password must include:</span>
+            <div className="admin-cp-checklist-grid">
+              <div className={`admin-cp-check-item ${rules.length ? "valid" : ""}`}>
+                <FiCheck size={13} /> At least 8 characters
+              </div>
+              <div className={`admin-cp-check-item ${rules.upper ? "valid" : ""}`}>
+                <FiCheck size={13} /> One uppercase letter (A-Z)
+              </div>
+              <div className={`admin-cp-check-item ${rules.lower ? "valid" : ""}`}>
+                <FiCheck size={13} /> One lowercase letter (a-z)
+              </div>
+              <div className={`admin-cp-check-item ${rules.number ? "valid" : ""}`}>
+                <FiCheck size={13} /> One number (0-9)
+              </div>
+              <div className={`admin-cp-check-item ${rules.special ? "valid" : ""}`}>
+                <FiCheck size={13} /> One special character (!@#$...)
+              </div>
+              <div className={`admin-cp-check-item ${passwordsMatch ? "valid" : ""}`}>
+                <FiCheck size={13} /> Passwords match
+              </div>
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="admin-cp-actions">
             <button
@@ -239,7 +276,7 @@ function AdminChangePasswordModal({ isOpen, onClose, onSuccess }) {
             <button
               type="submit"
               className="admin-cp-btn-submit"
-              disabled={isLoading || !currentPassword || !newPassword || !confirmPassword}
+              disabled={isLoading || !currentPassword || !isPasswordValid || !passwordsMatch}
             >
               {isLoading ? "Updating Password..." : "Update Password"}
             </button>

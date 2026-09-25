@@ -10,7 +10,8 @@
  * @returns {string} Sanitized error message
  */
 function safeErrorMessage(error, fallback = "Internal server error") {
-  if (process.env.NODE_ENV === "production") {
+  // Safe by default: only expose detailed error messages in explicit development mode
+  if (process.env.NODE_ENV !== "development") {
     return fallback;
   }
 

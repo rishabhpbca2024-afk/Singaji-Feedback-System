@@ -8,6 +8,8 @@ import {
   FiLock,
   FiArrowRight,
   FiCheckCircle,
+  FiXCircle,
+  FiShield,
 } from "react-icons/fi";
 import ssecLogo from "../assets/rename.png";
 import "./FeedbackForm.css";
@@ -18,10 +20,33 @@ function FeedbackForm() {
   const [searchParams] = useSearchParams();
 
   // ==========================================
-  // TOKEN FROM EMAIL LINK
+  // TOKEN FROM EMAIL LINK (M-8)
   // ==========================================
 
-  const token = searchParams.get("token") || "";
+  // Read token from hash fragment (#token=) or fallback to query parameter (?token=)
+  const [token, setToken] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const hashToken = hashParams.get("token");
+      if (hashToken) return hashToken;
+    }
+    return searchParams.get("token") || "";
+  });
+
+  // Strip token immediately from URL / history to prevent leakage (M-8)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasHashToken = window.location.hash && window.location.hash.includes("token=");
+      const url = new URL(window.location.href);
+      const hasQueryToken = url.searchParams.has("token");
+      if (hasHashToken || hasQueryToken) {
+        url.searchParams.delete("token");
+        url.hash = "";
+        const cleanUrl = url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "");
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+  }, []);
 
   // ==========================================
   // TRUSTED FEEDBACK DATA
@@ -757,38 +782,64 @@ function FeedbackForm() {
             STEP 3: SUCCESS
         ========================================== */}
 
+        {/* ==========================================
+            STEP 3: SUCCESS
+        ========================================== */}
+
         {step === "success" && (
           <div className="submission-success-card">
 
             <div className="success-icon">
-              <FiCheckCircle size={36} />
+              <FiCheckCircle size={44} />
             </div>
 
-            <h2>
+            <h2 className="success-title">
               Feedback Submitted Successfully!
             </h2>
 
-            <p>
-              Thank you for helping us improve teaching
-              quality at SSISM.
+            <p className="success-desc">
+              Thank you for sharing your feedback. Your input helps us continuously improve academic quality and teaching at Singaji Educational Society.
             </p>
 
-            <p className="anon-sub">
-              Your response has been recorded anonymously.
-            </p>
-
-            <button
-              className="student-card-btn close-tab-btn"
-              onClick={handleCloseTab}
-            >
-              <FiXCircle size={18} /> Close Window
-            </button>
-
-            {showCloseMsg && (
-              <p className="close-tab-note">
-                If the tab does not close automatically, please close this browser tab manually.
-              </p>
+            {feedbackInfo && (
+              <div className="success-summary-box">
+                <div className="summary-row">
+                  <span className="summary-label">Faculty:</span>
+                  <strong>{facultyName || "Faculty Member"}</strong>
+                </div>
+                <div className="summary-row">
+                  <span className="summary-label">Subject:</span>
+                  <strong>{subjectName || "Subject"}</strong>
+                </div>
+                {timeParam && (
+                  <div className="summary-row">
+                    <span className="summary-label">Lecture Time:</span>
+                    <span>{timeParam}</span>
+                  </div>
+                )}
+              </div>
             )}
+
+            <div className="anon-badge">
+              <FiShield style={{ marginRight: "6px" }} />
+              <span>Your response has been recorded 100% anonymously.</span>
+            </div>
+
+            <div className="success-action-group">
+              <button
+                type="button"
+                className="student-card-btn close-tab-btn"
+                onClick={handleCloseTab}
+              >
+                <FiXCircle size={18} /> Close Window
+              </button>
+            </div>
+
+            <p className="close-tab-note">
+              {showCloseMsg
+                ? "Your browser prevented closing this tab automatically. You may safely close this browser window now."
+                : "You may safely close this browser window or tab at any time."}
+            </p>
 
           </div>
         )}

@@ -8,6 +8,7 @@ import {
 import Login from "../pages/Login.jsx";
 import Register from "../pages/Register.jsx";
 import ActivateAccount from "../pages/ActivateAccount.jsx";
+import AdminSecurityLock from "../pages/AdminSecurityLock.jsx";
 
 import StudentDashboard from "../pages/StudentDashboard.jsx";
 import FeedbackForm from "../pages/FeedbackForm.jsx";
@@ -66,6 +67,11 @@ function AppRoutes() {
         <Route
           path="/activate-account"
           element={<ActivateAccount />}
+        />
+
+        <Route
+          path="/admin/security-lock"
+          element={<AdminSecurityLock />}
         />
 
 
