@@ -29,9 +29,9 @@ function Login() {
         headers: {
           "Content-Type": "application/json",
         },
-          credentials: "include",
+        credentials: "include",
         body: JSON.stringify({
-          gmail: email, 
+          gmail: email,
           password: password,
         }),
       });

@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const Faculty = require("../models/Faculty");
+const Admin = require("../models/admin");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { encryptToken } = require("../utils/tokenEncryption");
@@ -11,7 +12,7 @@ const {
 
 /**
  * Checks for duplicate faculty emails, taking into account Gmail '.' and '+' alias tricks (R-7).
- * Existing stored email format is untouched.
+ * Also prevents collisions with existing Administrator accounts.
  */
 const checkDuplicateGmail = async (inputEmail, excludeFacultyId = null) => {
   const normalized = String(inputEmail || "").toLowerCase().trim();
@@ -31,6 +32,13 @@ const checkDuplicateGmail = async (inputEmail, excludeFacultyId = null) => {
         .join("\\.?") +
       "(\\+[^@]*)?@(gmail|googlemail)\\.com$";
 
+    // 1. Prevent collision with Administrator accounts
+    const adminConflict = await Admin.findOne({
+      gmail: { $regex: new RegExp(regexPattern, "i") },
+    });
+    if (adminConflict) return true;
+
+    // 2. Prevent collision with other Faculty accounts
     const query = {
       gmail: { $regex: new RegExp(regexPattern, "i") },
     };
@@ -40,6 +48,10 @@ const checkDuplicateGmail = async (inputEmail, excludeFacultyId = null) => {
     const existing = await Faculty.findOne(query);
     return !!existing;
   }
+
+  // Non-gmail domain checks
+  const adminConflict = await Admin.findOne({ gmail: normalized });
+  if (adminConflict) return true;
 
   const query = { gmail: normalized };
   if (excludeFacultyId) {
@@ -150,7 +162,7 @@ const createFaculty = async (req, res) => {
     if (isDuplicate) {
       return res.status(409).json({
         success: false,
-        message: "Faculty with this gmail (or an alias of it) already exists",
+        message: "Faculty with this gmail (or an alias of it) already exists, or the email is reserved for an Administrator",
       });
     }
 
@@ -294,7 +306,7 @@ const updateFaculty = async (req, res) => {
     if (isDuplicate) {
       return res.status(409).json({
         success: false,
-        message: "This gmail (or an alias of it) is already registered with another faculty",
+        message: "This gmail (or an alias of it) is already registered with another faculty or Administrator",
       });
     }
 

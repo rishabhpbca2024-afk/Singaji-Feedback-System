@@ -116,11 +116,11 @@ function AppRoutes() {
             element={<FacultySchedule />}
           />
 
-           {/* Faculty Feedback */}
-            <Route
+          {/* Faculty Feedback */}
+          <Route
             path="feedback"
-              element={<FacultyFeedback />}
-            />
+            element={<FacultyFeedback />}
+          />
 
 
           {/* Faculty Profile */}

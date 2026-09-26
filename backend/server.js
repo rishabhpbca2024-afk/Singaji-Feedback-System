@@ -54,8 +54,15 @@ app.set("trust proxy", 1);
 // ==========================================
 // ALLOWED FRONTEND ORIGINS
 // ==========================================
+const configuredFrontend = process.env.FRONTEND_URL
+  ? (process.env.FRONTEND_URL.startsWith("http")
+      ? process.env.FRONTEND_URL
+      : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "")
+  : null;
+
 const allowedOrigins = [
   "https://singaji-feedback-system.vercel.app",
+  ...(configuredFrontend ? [configuredFrontend] : []),
 ];
 
 app.use(
@@ -93,10 +100,54 @@ app.use(mongoSanitize());
 app.use("/api", apiLimiter);
 
 // ==========================================
-// COOKIE PARSER
+// COOKIE PARSER & CSRF PROTECTION
 // ==========================================
 
 app.use(cookieParser());
+
+// Enforces origin verification on authenticated mutating requests (POST, PUT, DELETE)
+app.use((req, res, next) => {
+  const mutatingMethods = ["POST", "PUT", "DELETE", "PATCH"];
+  if (!mutatingMethods.includes(req.method)) {
+    return next();
+  }
+
+  // Only apply when request carries an authenticated session cookie
+  if (!req.cookies?.accessToken) {
+    return next();
+  }
+
+  const rawOrigin = req.headers.origin || req.headers.referer;
+
+  if (rawOrigin) {
+    let requestOrigin = rawOrigin;
+    try {
+      requestOrigin = new URL(rawOrigin).origin;
+    } catch {
+      requestOrigin = rawOrigin;
+    }
+
+    const isAllowed = allowedOrigins.includes(requestOrigin);
+    const isLocalhost =
+      process.env.NODE_ENV !== "production" &&
+      /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin);
+
+    if (!isAllowed && !isLocalhost) {
+      return res.status(403).json({
+        success: false,
+        message: "Cross-site request blocked by security policy.",
+      });
+    }
+  } else if (req.headers["sec-fetch-site"] === "cross-site") {
+    return res.status(403).json({
+      success: false,
+      message: "Cross-site request blocked by security policy.",
+    });
+  }
+
+  next();
+});
+
 
 // ==========================================
 // DATABASE

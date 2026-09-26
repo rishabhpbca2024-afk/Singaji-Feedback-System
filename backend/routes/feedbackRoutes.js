@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect,authorize,allowOwnFacultyOrAdmin } = require("../middleware/authMiddleware");
+const { protect, authorize, allowOwnFacultyOrAdmin } = require("../middleware/authMiddleware");
 const { tokenActionLimiter } = require("../middleware/Ratelimiter");
 
 const {
@@ -22,13 +22,13 @@ router.get(
   verifyFeedbackToken
 );
 
-router.post('/submit',  submitFeedback);
+router.post('/submit', submitFeedback);
 
 router.get('/all', protect, authorize("Admin"), getAllFeedback);
 
 router.get('/faculty/:facultyId', protect, authorize("Admin"), getFeedbackByFaculty);
 
-router.post('/send-invite', protect, authorize("Admin","Faculty"), sendFeedbackInvite);
+router.post('/send-invite', protect, authorize("Admin", "Faculty"), sendFeedbackInvite);
 
 router.get(
   "/faculty-view",
@@ -41,7 +41,7 @@ router.get(
 router.get(
   "/my-feedback",
   protect,
-  authorize("Admin","Faculty"),
+  authorize("Admin", "Faculty"),
   allowOwnFacultyOrAdmin,
   getMyFeedback
 );
@@ -49,7 +49,7 @@ router.get(
 router.get(
   "/faculty-history/:facultyId",
   protect,
-  authorize("Admin","Faculty"),
+  authorize("Admin", "Faculty"),
   allowOwnFacultyOrAdmin,
   getFacultyHistory
 );

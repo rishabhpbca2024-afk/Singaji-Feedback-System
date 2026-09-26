@@ -18,6 +18,7 @@ const {
   resetAccountLock,
 } = require("../utils/accountLockout");
 const { DUMMY_PASSWORD_HASH } = require("../config/security");
+const { maskEmail } = require("../utils/hashUtils");
 
 const Login = async (req, res) => {
   try {
@@ -827,7 +828,7 @@ const adminEmergencyLock = async (req, res) => {
     admin.securityLockToken = null;
     admin.securityLockExpires = null;
     admin.resetPasswordToken = hashedResetToken;
-    admin.resetPasswordExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes to complete recovery
+    admin.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes to complete recovery
     await admin.save();
 
     // Clear session cookies if any
@@ -838,11 +839,37 @@ const adminEmergencyLock = async (req, res) => {
       sameSite: isProduction ? "none" : "lax",
     });
 
+    // Dispatch secure recovery link directly to Admin's registered Gmail inbox
+    let frontendUrl = "http://localhost:5173";
+    if (process.env.NODE_ENV === "production" && process.env.FRONTEND_URL) {
+      frontendUrl = (process.env.FRONTEND_URL.startsWith("http")
+        ? process.env.FRONTEND_URL
+        : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "");
+    } else if (req.headers.origin) {
+      frontendUrl = req.headers.origin.replace(/\/$/, "");
+    } else if (process.env.FRONTEND_URL) {
+      frontendUrl = (process.env.FRONTEND_URL.startsWith("http")
+        ? process.env.FRONTEND_URL
+        : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "");
+    }
+
+    const resetUrl = `${frontendUrl}/admin/security-lock#resetToken=${encodeURIComponent(rawResetToken)}`;
+
+    try {
+      await sendPasswordResetEmail({
+        to: admin.gmail,
+        facultyName: admin.username || "Administrator",
+        resetUrl,
+      });
+    } catch (emailErr) {
+      console.error("[ADMIN EMERGENCY RESET EMAIL DISPATCH FAILED]:", emailErr.message);
+    }
+
+    // Return response without leaking resetToken to the HTTP response
     return res.status(200).json({
       success: true,
-      message: "Account has been successfully locked and all sessions terminated. Please set a new secure password.",
-      resetToken: rawResetToken,
-      adminGmail: admin.gmail,
+      message: "Administrator account has been locked and all sessions terminated. A secure recovery link has been dispatched to your registered Gmail.",
+      adminGmail: maskEmail(admin.gmail),
     });
   } catch (error) {
     console.error("Admin emergency lock error:", error);

@@ -20,7 +20,7 @@ function AdminSecurityLock() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Read emergency token from hash fragment (#token=) or fallback to query parameter (?token=) (M-8)
+  // Read emergency token or reset token from hash fragment (#token= or #resetToken=)
   const [token, setToken] = useState(() => {
     if (typeof window !== "undefined" && window.location.hash) {
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
@@ -30,14 +30,36 @@ function AdminSecurityLock() {
     return searchParams.get("token") || "";
   });
 
-  // Strip token immediately from URL / history to prevent leakage (M-8)
+  const [resetToken, setResetToken] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const rToken = hashParams.get("resetToken");
+      if (rToken) return rToken;
+    }
+    return searchParams.get("resetToken") || "";
+  });
+
+  // Step: 'confirm' (lock button), 'emailSent' (link emailed), 'reset' (password form), 'success'
+  const [step, setStep] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      if (hashParams.get("resetToken")) return "reset";
+    }
+    if (searchParams.get("resetToken")) return "reset";
+    return "confirm";
+  });
+
+  // Strip tokens immediately from URL / history to prevent leakage (M-8)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const hasHashToken = window.location.hash && window.location.hash.includes("token=");
+      const hasHashToken =
+        window.location.hash &&
+        (window.location.hash.includes("token=") || window.location.hash.includes("resetToken="));
       const url = new URL(window.location.href);
-      const hasQueryToken = url.searchParams.has("token");
+      const hasQueryToken = url.searchParams.has("token") || url.searchParams.has("resetToken");
       if (hasHashToken || hasQueryToken) {
         url.searchParams.delete("token");
+        url.searchParams.delete("resetToken");
         url.hash = "";
         const cleanUrl = url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : "");
         window.history.replaceState({}, document.title, cleanUrl);
@@ -45,10 +67,6 @@ function AdminSecurityLock() {
     }
   }, []);
 
-  // Step 1: 'confirm', Step 2: 'reset', Step 3: 'success'
-  const [step, setStep] = useState("confirm");
-
-  const [resetToken, setResetToken] = useState("");
   const [adminGmail, setAdminGmail] = useState("");
 
   const [password, setPassword] = useState("");
@@ -96,9 +114,8 @@ function AdminSecurityLock() {
         return;
       }
 
-      setResetToken(data.resetToken);
       setAdminGmail(data.adminGmail || "");
-      setStep("reset");
+      setStep("emailSent");
     } catch (err) {
       console.error("Emergency lock error:", err);
       setError("Unable to connect to security server. Please try again.");
@@ -177,7 +194,7 @@ function AdminSecurityLock() {
             <img src={ssecLogo} alt="SSISM Logo" className="asl-logo" />
           </div>
 
-          {!token ? (
+          {!token && !resetToken ? (
             <div className="asl-error-banner">
               <FiAlertTriangle size={24} className="asl-err-icon" />
               <div>
@@ -215,7 +232,7 @@ function AdminSecurityLock() {
                     <FiCheck size={14} /> <strong>Lock the administrator account</strong> to block any further unauthorized logins.
                   </li>
                   <li>
-                    <FiCheck size={14} /> <strong>Direct you to reclaim the account</strong> by setting a fresh, strong password.
+                    <FiCheck size={14} /> <strong>Send a password reset link</strong> directly to your registered Gmail to reclaim your account.
                   </li>
                 </ul>
               </div>
@@ -237,13 +254,42 @@ function AdminSecurityLock() {
                   "Locking Account & Terminating Sessions…"
                 ) : (
                   <>
-                    <FiShield size={18} /> Lock Account & Reclaim Access
+                    <FiShield size={18} /> Lock Account & Send Recovery Link
                   </>
                 )}
               </button>
 
               <p className="asl-safe-note">
                 Did you change the password yourself? If so, you can safely close this page.
+              </p>
+            </div>
+          ) : step === "emailSent" ? (
+            /* ── STEP: EMAIL SENT AFTER FREEZE ── */
+            <div className="asl-step-confirm">
+              <div className="asl-badge-locked">
+                <FiCheckCircle size={18} />
+                <span>Account Freeze Applied</span>
+              </div>
+
+              <h2 className="asl-title">Account Locked & Sessions Terminated</h2>
+              <p className="asl-subtitle">
+                Your administrator account has been safely locked. All active sessions have been invalidated across all browsers and devices.
+              </p>
+
+              <div className="asl-info-box">
+                <p>
+                  To choose a new secure password and unlock your account, a single-use password reset link has been dispatched to:
+                </p>
+                <p style={{ fontWeight: "bold", color: "#1e293b", margin: "10px 0", fontSize: "16px" }}>
+                  {adminGmail || "your registered institutional Gmail"}
+                </p>
+                <p style={{ fontSize: "13px", color: "#64748b", margin: 0 }}>
+                  Please check your Gmail inbox within <strong>15 minutes</strong> and open the link to set your new password.
+                </p>
+              </div>
+
+              <p className="asl-safe-note">
+                You can now safely close this window and proceed from your email.
               </p>
             </div>
           ) : step === "reset" ? (
