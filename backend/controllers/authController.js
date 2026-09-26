@@ -410,6 +410,11 @@ const resetPassword = async (req, res) => {
     faculty.resetPasswordExpires = null;
     faculty.passwordChangedAt = new Date();
 
+    // L-10: If account was pending activation, password reset fulfills activation
+    faculty.isActivated = true;
+    faculty.activationToken = null;
+    faculty.activationTokenExpires = null;
+
     await faculty.save();
 
     return res.status(200).json({

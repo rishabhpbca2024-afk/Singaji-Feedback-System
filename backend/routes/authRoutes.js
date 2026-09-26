@@ -4,6 +4,7 @@ const {
   loginIpLimiter,
   passwordResetLimiter,
   activationResendLimiter,
+  tokenActionLimiter,
 } = require("../middleware/Ratelimiter");
 const {
   Login,
@@ -25,8 +26,8 @@ router.post("/logout", logout);
 router.post("/forgot-password", passwordResetLimiter, forgotPassword);
 router.post("/reset-password", passwordResetLimiter, resetPassword);
 
-// Faculty Account Activation Flow (R-4, R-8)
-router.post("/activate-account", activateFacultyAccount);
+// Faculty Account Activation Flow (R-4, R-8, L-3)
+router.post("/activate-account", tokenActionLimiter, activateFacultyAccount);
 router.post("/resend-activation", activationResendLimiter, resendActivationLink);
 
 // Admin Emergency Security Lockdown & Recovery

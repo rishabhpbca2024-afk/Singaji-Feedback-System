@@ -58,8 +58,11 @@ const getAllFaculty = async (req, res) => {
       ? "facultyId name gmail section subjects isActive isActivated"
       : "facultyId name section subjects";
 
-    // Non-admin faculty only see active faculty members
-    const filter = isAdmin ? {} : { isActive: true };
+    // Active faculty by default (L-8: soft-delete preservation)
+    const filter =
+      isAdmin && req.query.includeInactive === "true"
+        ? {}
+        : { isActive: { $ne: false } };
 
     const faculty = await Faculty.find(filter)
       .select(selectFields)
@@ -337,7 +340,9 @@ const deleteFaculty = async (req, res) => {
       });
     }
 
-    await Faculty.deleteOne({ facultyId });
+    // Soft delete: Mark isActive as false to preserve historical feedback and ratings integrity (L-8)
+    faculty.isActive = false;
+    await faculty.save();
 
     return res.status(200).json({
       success: true,

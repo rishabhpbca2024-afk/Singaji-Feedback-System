@@ -125,11 +125,28 @@ const activationResendLimiter = rateLimit({
   },
 });
 
+// ==========================================
+// TOKEN VERIFICATION & ACTIVATION RATE LIMIT (L-3)
+// ==========================================
+
+// Prevents CPU exhaustion via repeated bcrypt hashing and brute-force token scanning
+const tokenActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 30, // 30 requests per IP per 15 min
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many token verification requests from this IP. Please try again later.",
+  },
+});
+
 module.exports = {
   apiLimiter,
   loginIpLimiter,
   loginAccountLimiter,
   passwordResetLimiter,
   activationResendLimiter,
+  tokenActionLimiter,
 };
 

@@ -7,6 +7,10 @@ const helmet = require("helmet");
 
 dotenv.config();
 
+// Enforce minimum cryptographic secret strengths before booting (C-2)
+const validateEnv = require("./config/validateEnv");
+validateEnv();
+
 const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");

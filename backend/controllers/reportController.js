@@ -61,9 +61,13 @@ const getOverallReport = async (req, res) => {
     }
 
     const totalDesignatedStudents = designatedStudents.length;
-    const totalSubmittedStudents = Math.max(
-      submittedDesignatedFromSubmissions.length,
-      submittedDesignatedFromLegacy.length
+    const totalSubmittedStudents = Math.min(
+      totalDesignatedStudents,
+      Math.max(
+        submittedDesignatedFromSubmissions.length,
+        submittedHashes.length,
+        submittedDesignatedFromLegacy.length
+      )
     );
 
     const feedbackCompletion =

@@ -670,6 +670,19 @@ const deleteSchedule = async (req, res) => {
       });
     }
 
+    // Prevent deletion if feedback emails have already been sent for any slot (H-1)
+    const hasFeedbackSent =
+      schedule.slot1?.feedbackEmailSent ||
+      schedule.slot2?.feedbackEmailSent ||
+      schedule.slot3?.feedbackEmailSent;
+
+    if (hasFeedbackSent) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete schedule after feedback emails have already been sent for its lectures.",
+      });
+    }
+
     if (req.user?.role === "Faculty") {
       const isAuthorized = await verifyFacultyDepartment(req.user, schedule.department);
       if (!isAuthorized) {

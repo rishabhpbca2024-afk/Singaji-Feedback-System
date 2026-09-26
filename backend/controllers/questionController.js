@@ -22,7 +22,9 @@ const getAllQuestions = async (req, res) => {
         const { decryptToken } = require("../utils/tokenEncryption");
         const jwt = require("jsonwebtoken");
         const token = decryptToken(encryptedToken);
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+          algorithms: ["HS256"],
+        });
         if (decoded?.role === "Admin") {
           isAdmin = true;
         }

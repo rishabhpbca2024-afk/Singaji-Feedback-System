@@ -27,11 +27,14 @@ const protect = async (req, res, next) => {
       req.headers.authorization.startsWith("Bearer ")
     ) {
       const headerToken = req.headers.authorization.split(" ")[1];
-      // Support both encrypted token and raw JWT in Authorization header
+      // Only accept properly encrypted tokens (C-3: drop unencrypted raw JWT fallback)
       try {
         token = decryptToken(headerToken);
       } catch (e) {
-        token = headerToken;
+        return res.status(401).json({
+          success: false,
+          message: "Invalid or unencrypted authorization token.",
+        });
       }
     }
 
@@ -42,10 +45,11 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // 2. Decrypted JWT ko verify karna
+    // 2. Decrypted JWT ko verify karna with pinned algorithm (C-2, L-9)
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { algorithms: ["HS256"] }
     );
 
     // 3. DB Re-check for existence, isActive, passwordChangedAt and mustChangePassword

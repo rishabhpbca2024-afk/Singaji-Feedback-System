@@ -46,6 +46,16 @@ const saveSelectedStudents = async (req, res) => {
     }
 
     const normalizedGmail = s.gmail.toLowerCase().trim();
+
+    // Validate email format (L-7)
+    const EMAIL_RE = /^[^\s@\r\n]+@[^\s@\r\n]+\.[^\s@\r\n]+$/;
+    if (!EMAIL_RE.test(normalizedGmail)) {
+      return res.status(400).json({
+        success: false,
+        message: `Student at position ${i + 1} has an invalid email format: ${normalizedGmail}`,
+      });
+    }
+
     if (seenGmails.has(normalizedGmail)) {
       return res.status(400).json({
         success: false,
@@ -59,6 +69,25 @@ const saveSelectedStudents = async (req, res) => {
       level: String(level).trim(),
       name: s.name.trim(),
       gmail: normalizedGmail,
+    });
+  }
+
+  // Validate that all selected students exist in the registered Students collection (L-7)
+  const Student = require("../models/Students");
+  const gmailsToCheck = sanitizedStudents.map((s) => s.gmail);
+  const foundStudents = await Student.find({
+    gmail: { $in: gmailsToCheck },
+  })
+    .select("gmail")
+    .lean();
+
+  const foundSet = new Set(foundStudents.map((s) => s.gmail.toLowerCase().trim()));
+  const missingStudents = gmailsToCheck.filter((g) => !foundSet.has(g));
+
+  if (missingStudents.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: `Cannot select unregistered students: ${missingStudents.join(", ")}`,
     });
   }
 

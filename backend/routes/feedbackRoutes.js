@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect,authorize,allowOwnFacultyOrAdmin } = require("../middleware/authMiddleware");
-
+const { tokenActionLimiter } = require("../middleware/Ratelimiter");
 
 const {
   submitFeedback,
@@ -18,6 +18,7 @@ const router = express.Router();
 
 router.get(
   "/verify-token",
+  tokenActionLimiter,
   verifyFeedbackToken
 );
 
