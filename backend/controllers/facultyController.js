@@ -65,14 +65,19 @@ const getAllFaculty = async (req, res) => {
   try {
     const isAdmin = req.user?.role === "Admin";
 
-    // Admins get full management fields; Faculty get only schedule display fields (M-6)
-    const selectFields = isAdmin
-      ? "facultyId name gmail section subjects isActive isActivated"
-      : "facultyId name section subjects";
+    // Enforce Admin-only access to prevent institution-wide faculty enumeration (M-6)
+    if (!isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only administrators can list all faculty members.",
+      });
+    }
+
+    const selectFields = "facultyId name gmail section subjects isActive isActivated";
 
     // Active faculty by default (L-8: soft-delete preservation)
     const filter =
-      isAdmin && req.query.includeInactive === "true"
+      req.query.includeInactive === "true"
         ? {}
         : { isActive: { $ne: false } };
 
@@ -107,6 +112,62 @@ const getAllFaculty = async (req, res) => {
         process.env.NODE_ENV === "development"
           ? error.message
           : "Failed to fetch faculty",
+    });
+  }
+};
+
+/**
+ * Limited fields endpoint for schedule creation and selection dropdowns (M-6).
+ * Faculty can ONLY view faculty members belonging to their own department/section.
+ * Exposes strictly limited public fields (facultyId, name, section).
+ */
+const getFacultyDropdown = async (req, res) => {
+  try {
+    const isAdmin = req.user?.role === "Admin";
+    let filter = { isActive: { $ne: false } };
+
+    if (!isAdmin) {
+      // Determine faculty's department/section from DB or token
+      let department = req.user?.department;
+      if (!department && req.user?.userId) {
+        const facultyDoc = await Faculty.findById(req.user.userId).select("section").lean();
+        department = facultyDoc?.section;
+      }
+
+      if (department) {
+        filter.section = department;
+      }
+    } else if (req.query.section) {
+      filter.section = req.query.section;
+    }
+
+    const faculty = await Faculty.find(filter)
+      .select("facultyId name section")
+      .sort({ section: 1, name: 1 })
+      .lean();
+
+    const sections = {};
+    faculty.forEach((teacher) => {
+      if (!sections[teacher.section]) {
+        sections[teacher.section] = [];
+      }
+      sections[teacher.section].push(teacher);
+    });
+
+    return res.status(200).json({
+      success: true,
+      faculty,
+      sections,
+    });
+  } catch (error) {
+    console.error("Get faculty dropdown error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to fetch faculty for dropdown",
     });
   }
 };
@@ -482,6 +543,7 @@ const changePassword = async (req, res) => {
 
 module.exports = {
   getAllFaculty,
+  getFacultyDropdown,
   createFaculty,
   updateFaculty,
   deleteFaculty,

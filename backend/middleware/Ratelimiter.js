@@ -1,12 +1,15 @@
 const { rateLimit, ipKeyGenerator } = require("express-rate-limit");
+const MongoRateLimitStore = require("../utils/mongoRateLimitStore");
+const { checkAccountLock } = require("../utils/accountLockout");
 
 // ==========================================
-// GENERAL API RATE LIMIT
+// GENERAL API RATE LIMIT (L-4: MongoDB-backed shared store)
 // ==========================================
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 500, // Maximum 500 requests per IP
+  store: new MongoRateLimitStore(15 * 60 * 1000, "rl:api:"),
 
   standardHeaders: "draft-8",
   legacyHeaders: false,
@@ -18,16 +21,13 @@ const apiLimiter = rateLimit({
 });
 
 // ==========================================
-// LOGIN IP RATE LIMIT
+// LOGIN IP RATE LIMIT (L-4: MongoDB-backed shared store)
 // ==========================================
-
-// Ye poore IP ko protect karega
-// Isse attacker bahut saare different accounts
-// try karke limiter bypass nahi kar payega.
 
 const loginIpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 20, // Maximum 20 login requests per IP
+  store: new MongoRateLimitStore(15 * 60 * 1000, "rl:loginip:"),
 
   standardHeaders: "draft-8",
   legacyHeaders: false,
@@ -41,17 +41,13 @@ const loginIpLimiter = rateLimit({
 });
 
 // ==========================================
-// LOGIN ACCOUNT RATE LIMIT
+// LOGIN ACCOUNT RATE LIMIT (L-4: MongoDB-backed shared store)
 // ==========================================
-
-// Ye email + IP ke basis par limit karega
-// Isliye Gmail A block hone par Gmail B block nahi hoga.
-
-const { checkAccountLock } = require("../utils/accountLockout");
 
 const loginAccountLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 20, // Outer DoS protection envelope; strict attempt threshold is managed by database-level AccountLockout
+  limit: 20, // Outer DoS envelope; strict threshold is managed by database AccountLockout (H-3)
+  store: new MongoRateLimitStore(15 * 60 * 1000, "rl:loginacc:"),
 
   standardHeaders: "draft-8",
   legacyHeaders: false,
@@ -86,13 +82,13 @@ const loginAccountLimiter = rateLimit({
 });
 
 // ==========================================
-// PASSWORD RESET RATE LIMIT
+// PASSWORD RESET RATE LIMIT (L-4: MongoDB-backed shared store)
 // ==========================================
 
-// Prevents brute force token guessing and email flooding
 const passwordResetLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 10, // Maximum 10 password reset requests per IP per 15 minutes
+  store: new MongoRateLimitStore(15 * 60 * 1000, "rl:pwreset:"),
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -103,13 +99,13 @@ const passwordResetLimiter = rateLimit({
 });
 
 // ==========================================
-// ACTIVATION LINK RESEND RATE LIMIT
+// ACTIVATION LINK RESEND RATE LIMIT (L-4: MongoDB-backed shared store)
 // ==========================================
 
-// Prevents email flooding (1 request per 2 minutes per email + IP)
 const activationResendLimiter = rateLimit({
   windowMs: 2 * 60 * 1000, // 2 minutes
   limit: 1, // Maximum 1 request per 2 minutes
+  store: new MongoRateLimitStore(2 * 60 * 1000, "rl:actresend:"),
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -126,13 +122,13 @@ const activationResendLimiter = rateLimit({
 });
 
 // ==========================================
-// TOKEN VERIFICATION & ACTIVATION RATE LIMIT (L-3)
+// TOKEN VERIFICATION & ACTIVATION RATE LIMIT (L-3, L-4: MongoDB-backed shared store)
 // ==========================================
 
-// Prevents CPU exhaustion via repeated bcrypt hashing and brute-force token scanning
 const tokenActionLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   limit: 30, // 30 requests per IP per 15 min
+  store: new MongoRateLimitStore(15 * 60 * 1000, "rl:tokenact:"),
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -149,4 +145,3 @@ module.exports = {
   activationResendLimiter,
   tokenActionLimiter,
 };
-

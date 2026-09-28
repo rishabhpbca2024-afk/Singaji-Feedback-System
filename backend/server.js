@@ -91,11 +91,11 @@ app.use(
   })
 );
 // ==========================================
-// BODY PARSERS & SANITIZATION (H-5)
+// BODY PARSERS & SANITIZATION (H-5, M-1)
 // ==========================================
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// express.urlencoded removed to mitigate CSRF attacks via simple requests (M-1)
 app.use(mongoSanitize());
 app.use("/api", apiLimiter);
 

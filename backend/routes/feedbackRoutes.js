@@ -28,7 +28,8 @@ router.get('/all', protect, authorize("Admin"), getAllFeedback);
 
 router.get('/faculty/:facultyId', protect, authorize("Admin"), getFeedbackByFaculty);
 
-router.post('/send-invite', protect, authorize("Admin", "Faculty"), sendFeedbackInvite);
+// Admin-only: Manual feedback invitation dispatch (H-1: Prevents faculty from creating fake feedback sessions)
+router.post('/send-invite', protect, authorize("Admin"), sendFeedbackInvite);
 
 router.get(
   "/faculty-view",

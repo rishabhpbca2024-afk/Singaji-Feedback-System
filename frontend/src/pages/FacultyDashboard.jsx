@@ -94,7 +94,7 @@ function FacultyDashboard() {
   useEffect(() => {
   const fetchFaculty = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/faculty`,
+      const response = await fetch(`${API_URL}/api/faculty/dropdown`,
         
         {
         credentials: "include",
@@ -107,7 +107,7 @@ function FacultyDashboard() {
         return;
       }
 
-      const allFaculty = Object.values(data.sections || {}).flat();
+      const allFaculty = data.faculty || Object.values(data.sections || {}).flat();
 
       setFacultyList(allFaculty);
     } catch (error) {

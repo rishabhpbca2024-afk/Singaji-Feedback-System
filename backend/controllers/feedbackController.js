@@ -757,33 +757,36 @@ const sendFeedbackInvite = async (req, res) => {
     }
 
     // =====================================================
-    // FACULTY ATTRIBUTION SCOPING (C-6)
+    // FACULTY ATTRIBUTION & ADMIN RESTRICTION (H-1, C-6)
     // =====================================================
-    let effectiveFacultyId = facultyId;
-    let effectiveFacultyName = facultyName;
-
-    if (req.user?.role === "Faculty") {
-      const facultyDoc = await Faculty.findById(req.user.userId)
-        .select("facultyId name isActive")
-        .lean();
-
-      if (!facultyDoc || !facultyDoc.isActive) {
-        return res.status(403).json({
-          success: false,
-          message: "Faculty account not found or inactive",
-        });
-      }
-
-      effectiveFacultyId = facultyDoc.facultyId;
-      effectiveFacultyName = facultyDoc.name;
-    } else if (req.user?.role === "Admin") {
-      if (!facultyId || !facultyName) {
-        return res.status(400).json({
-          success: false,
-          message: "facultyId and facultyName are required for Admin invite",
-        });
-      }
+    if (req.user?.role !== "Admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only administrators can dispatch manual feedback invitations (H-1).",
+      });
     }
+
+    if (!facultyId || !facultyName) {
+      return res.status(400).json({
+        success: false,
+        message: "facultyId and facultyName are required for Admin invite",
+      });
+    }
+
+    // Verify faculty exists and is active in database
+    const facultyDoc = await Faculty.findOne({ facultyId: String(facultyId).trim() })
+      .select("facultyId name isActive")
+      .lean();
+
+    if (!facultyDoc || facultyDoc.isActive === false) {
+      return res.status(400).json({
+        success: false,
+        message: "Specified faculty member does not exist or is inactive.",
+      });
+    }
+
+    const effectiveFacultyId = facultyDoc.facultyId;
+    const effectiveFacultyName = facultyDoc.name;
 
     // =====================================================
     // SEND EMAIL (C-2: EXACT 9 PARAMETERS IN ORDER)
