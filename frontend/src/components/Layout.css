@@ -1,13 +1,15 @@
 /* ========================================
-   APP LAYOUT — Clean Light UI
-   No background image
+   APP LAYOUT — Clean Modern Dashboard UI
 ======================================== */
 
 .app-layout {
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   background: #f5f7fb;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 
@@ -17,22 +19,26 @@
 
 .app-body {
   display: flex;
-  min-height: calc(100vh - 64px);
+  flex: 1;
+  min-height: 0;
+  height: calc(100vh - 68px);
+  position: relative;
+  overflow: hidden;
 }
 
 
 /* ========================================
    MAIN CONTENT AREA
-   Expands when sidebar is collapsed
+   Internal smooth scroll container
 ======================================== */
 
 .main-content {
   flex: 1;
   min-width: 0;
+  height: 100%;
   padding: 28px 30px;
   overflow-y: auto;
   box-sizing: border-box;
-  transition: margin-left 0.28s ease;
 }
 
 
@@ -44,8 +50,4 @@
   .main-content {
     padding: 20px 16px;
   }
-} 
-
-/* Adjust main content margin based on sidebar state */
-.sidebar-open ~ .main-content { margin-left: 240px; }
-.sidebar-collapsed ~ .main-content { margin-left: 68px; }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import Modal from "../components/Modal.jsx";
+import CustomSelect from "../components/CustomSelect.jsx";
 import "./ManageQuestions.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -295,31 +296,24 @@ const authUser = JSON.parse(localStorage.getItem("authUser"));
 
           <div className="modal-form-group">
             <label>Category</label>
-            <select
+            <CustomSelect
               value={newQuestion.category}
               onChange={(e) =>
                 setNewQuestion({ ...newQuestion, category: e.target.value })
               }
-            >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+              options={categories}
+            />
           </div>
 
           <div className="modal-form-group">
             <label>Status</label>
-            <select
+            <CustomSelect
               value={newQuestion.status}
               onChange={(e) =>
                 setNewQuestion({ ...newQuestion, status: e.target.value })
               }
-            >
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
+              options={["Active", "Inactive"]}
+            />
           </div>
 
           <div className="modal-actions">
@@ -362,7 +356,7 @@ const authUser = JSON.parse(localStorage.getItem("authUser"));
 
             <div className="modal-form-group">
               <label>Category</label>
-              <select
+              <CustomSelect
                 value={editingQuestion.category}
                 onChange={(e) =>
                   setEditingQuestion({
@@ -370,18 +364,13 @@ const authUser = JSON.parse(localStorage.getItem("authUser"));
                     category: e.target.value,
                   })
                 }
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+                options={categories}
+              />
             </div>
 
             <div className="modal-form-group">
               <label>Status</label>
-              <select
+              <CustomSelect
                 value={editingQuestion.status}
                 onChange={(e) =>
                   setEditingQuestion({
@@ -389,10 +378,8 @@ const authUser = JSON.parse(localStorage.getItem("authUser"));
                     status: e.target.value,
                   })
                 }
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
+                options={["Active", "Inactive"]}
+              />
             </div>
 
             <div className="modal-actions">

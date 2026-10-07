@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { FiAlertTriangle } from "react-icons/fi";
 import FacultyFeedbackModal from "../components/FacultyFeedbackModal.jsx";
+import CustomSelect from "../components/CustomSelect.jsx";
 import "./AdminFeedback.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -353,33 +354,19 @@ function AdminFeedback() {
           }
         />
 
-        <select
-          className="af-select"
-          value={deptFilter}
-          onChange={(e) =>
-            setDeptFilter(e.target.value)
-          }
-        >
-          <option value="All">
-            All Departments
-          </option>
-
-          <option value="ITEG">
-            ITEG
-          </option>
-
-          <option value="MEG">
-            MEG
-          </option>
-
-          <option value="BEG">
-            BEG
-          </option>
-
-          <option value="B.Tech">
-            B.Tech
-          </option>
-        </select>
+        <div style={{ minWidth: "180px" }}>
+          <CustomSelect
+            value={deptFilter}
+            onChange={(e) => setDeptFilter(e.target.value)}
+            options={[
+              { value: "All", label: "All Departments" },
+              { value: "ITEG", label: "ITEG" },
+              { value: "MEG", label: "MEG" },
+              { value: "BEG", label: "BEG" },
+              { value: "B.Tech", label: "B.Tech" },
+            ]}
+          />
+        </div>
 
         {/* Date Filter */}
 

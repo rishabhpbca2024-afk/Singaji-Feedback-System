@@ -97,12 +97,12 @@ function Sidebar() {
             <span className="sidebar-label">{item.label}</span>
           </NavLink>
         ))}
+      </nav>
 
-        {/* Separator */}
+      <div className="sidebar-bottom">
         <div className="sidebar-separator" />
-
-        {/* Logout */}
         <button
+          type="button"
           className="sidebar-link sidebar-logout-btn"
           onClick={handleLogout}
           title={!sidebarOpen ? "Logout" : undefined}
@@ -110,7 +110,7 @@ function Sidebar() {
           <span className="sidebar-icon">{Icons.Logout}</span>
           <span className="sidebar-label">Logout</span>
         </button>
-      </nav>
+      </div>
     </aside>
   );
 }

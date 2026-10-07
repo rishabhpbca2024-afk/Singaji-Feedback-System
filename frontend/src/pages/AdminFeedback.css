@@ -95,44 +95,69 @@
 .af-filters {
   display: flex;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .af-search {
   flex: 1;
-  min-width: 200px;
-  padding: 10px 14px;
+  min-width: 220px;
+  height: 42px;
+  padding: 0 14px;
   border: 1px solid #d1d5db;
-  border-radius: 9px;
+  border-radius: 10px;
   font-size: 14px;
-  font-family: 'Inter', Arial, sans-serif;
+  font-family: inherit;
   color: #111827;
   background: #ffffff;
   outline: none;
+  box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .af-search:focus {
   border-color: #ea580c;
-  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
 }
 
 .af-select {
-  padding: 10px 14px;
+  height: 42px;
+  padding: 0 34px 0 14px;
   border: 1px solid #d1d5db;
-  border-radius: 9px;
+  border-radius: 10px;
   font-size: 14px;
-  font-family: 'Inter', Arial, sans-serif;
-  color: #374151;
-  background: #ffffff;
+  font-family: inherit;
+  font-weight: 500;
+  color: #111827;
+  background-color: #ffffff;
   outline: none;
   cursor: pointer;
-  transition: border-color 0.2s;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  min-width: 170px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ea580c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+
+.af-select:hover {
+  border-color: #ea580c;
 }
 
 .af-select:focus {
   border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+input[type="date"].af-select {
+  padding: 0 14px;
+  background-image: none;
+  min-width: 155px;
 }
 
 

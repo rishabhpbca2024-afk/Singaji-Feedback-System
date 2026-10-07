@@ -148,12 +148,12 @@ function FacultySidebar() {
             </span>
           </NavLink>
         ))}
+      </nav>
 
-        {/* Separator */}
+      <div className="sidebar-bottom">
         <div className="sidebar-separator" />
-
-        {/* Logout */}
         <button
+          type="button"
           className="sidebar-link sidebar-logout-btn"
           onClick={handleLogout}
           title={!sidebarOpen ? "Logout" : undefined}
@@ -166,7 +166,7 @@ function FacultySidebar() {
             Logout
           </span>
         </button>
-      </nav>
+      </div>
     </aside>
   );
 }

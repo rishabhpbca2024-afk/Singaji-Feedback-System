@@ -8,6 +8,7 @@ import {
   FiFilter,
 } from "react-icons/fi";
 import Modal from "../components/Modal.jsx";
+import CustomSelect from "../components/CustomSelect.jsx";
 import "./ManageLectures.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -897,17 +898,17 @@ function ManageLectures() {
           {/* FACULTY FILTER OPTIONS */}
           <div className="lecture-faculty-filter">
             <label htmlFor="faculty-filter">Filter Faculty</label>
-            <div className="select-input-wrapper">
-              <FiFilter className="filter-icon" />
-              <select
+            <div style={{ minWidth: "175px" }}>
+              <CustomSelect
                 id="faculty-filter"
                 value={facultyFilter}
                 onChange={(e) => setFacultyFilter(e.target.value)}
-              >
-                <option value="all">All Faculty</option>
-                <option value="has">Has Lecture</option>
-                <option value="none">No Lecture</option>
-              </select>
+                options={[
+                  { value: "all", label: "All Faculty" },
+                  { value: "has", label: "Has Lecture" },
+                  { value: "none", label: "No Lecture" },
+                ]}
+              />
             </div>
           </div>
 
@@ -1033,39 +1034,17 @@ function ManageLectures() {
           {/* DEPARTMENT */}
 
           <div className="modal-form-group">
-
-            <label>
-              Department
-            </label>
-
-            <select
-              value={
-                newLecture.department
-              }
+            <label>Department</label>
+            <CustomSelect
+              value={newLecture.department}
               onChange={(e) =>
                 setNewLecture({
                   ...newLecture,
-                  department:
-                    e.target.value,
+                  department: e.target.value,
                 })
               }
-            >
-
-              {departments.map(
-                (department) => (
-
-                  <option
-                    key={department}
-                    value={department}
-                  >
-                    {department}
-                  </option>
-
-                )
-              )}
-
-            </select>
-
+              options={departments}
+            />
           </div>
 
 
@@ -1149,38 +1128,21 @@ function ManageLectures() {
           {/* STATUS */}
 
           <div className="modal-form-group">
-
-            <label>
-              Status
-            </label>
-
-            <select
-              value={
-                newLecture.status
-              }
+            <label>Status</label>
+            <CustomSelect
+              value={newLecture.status}
               onChange={(e) =>
                 setNewLecture({
                   ...newLecture,
-                  status:
-                    e.target.value,
+                  status: e.target.value,
                 })
               }
-            >
-
-              <option value="Scheduled">
-                Scheduled
-              </option>
-
-              <option value="In Progress">
-                In Progress
-              </option>
-
-              <option value="Completed">
-                Completed
-              </option>
-
-            </select>
-
+              options={[
+                { value: "Scheduled", label: "Scheduled" },
+                { value: "In Progress", label: "In Progress" },
+                { value: "Completed", label: "Completed" },
+              ]}
+            />
           </div>
 
 
@@ -1301,40 +1263,17 @@ function ManageLectures() {
             {/* DEPARTMENT */}
 
             <div className="modal-form-group">
-
-              <label>
-                Department
-              </label>
-
-              <select
-                value={
-                  activeLecture.department ||
-                  ""
-                }
+              <label>Department</label>
+              <CustomSelect
+                value={activeLecture.department || ""}
                 onChange={(e) =>
                   setActiveLecture({
                     ...activeLecture,
-                    department:
-                      e.target.value,
+                    department: e.target.value,
                   })
                 }
-              >
-
-                {departments.map(
-                  (department) => (
-
-                    <option
-                      key={department}
-                      value={department}
-                    >
-                      {department}
-                    </option>
-
-                  )
-                )}
-
-              </select>
-
+                options={departments}
+              />
             </div>
 
 

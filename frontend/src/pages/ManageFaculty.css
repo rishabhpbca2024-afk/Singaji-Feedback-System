@@ -141,7 +141,7 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
-    max-width: 950px;
+    width: 100%;
 }
 
 .faculty-row {
@@ -154,6 +154,8 @@
     border-radius: 16px;
     box-shadow: var(--shadow-xs);
     transition: all 0.25s ease;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .faculty-row:hover {
@@ -236,14 +238,15 @@
 }
 
 .btn-view {
-    background: #6366f1;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
     border: none;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
 }
 
 .btn-view:hover {
-    background: #4f46e5;
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
 }
 
 .faculty-count {

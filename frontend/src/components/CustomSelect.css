@@ -1,0 +1,161 @@
+/* =============================================
+   CUSTOM SELECT — Brand Orange Design System
+   Replaces native OS select with beautiful UI
+   ============================================= */
+
+.custom-select-container {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.custom-select-container.open {
+  z-index: 100;
+}
+
+/* TRIGGER BUTTON */
+.custom-select-trigger {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 500;
+  color: var(--text-primary, #0f172a);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.custom-select-trigger:hover:not(:disabled) {
+  border-color: #ea580c;
+}
+
+.custom-select-container.open .custom-select-trigger,
+.custom-select-trigger:focus-visible {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.custom-select-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f8fafc;
+}
+
+.custom-select-value {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.custom-select-value.placeholder {
+  color: #94a3b8;
+}
+
+/* ARROW ICON */
+.custom-select-arrow {
+  font-size: 16px;
+  color: #ea580c;
+  flex-shrink: 0;
+  margin-left: 10px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-select-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+/* DROPDOWN MENU (OPENS BELOW, NEVER OVERLAPS TRIGGER) */
+.custom-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 14px 35px -4px rgba(15, 23, 42, 0.14),
+              0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  max-height: 230px;
+  overflow-y: auto;
+  z-index: 1050;
+  box-sizing: border-box;
+  animation: selectMenuDropIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes selectMenuDropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* OPTION ITEM */
+.custom-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.custom-select-option:hover {
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+/* SELECTED OPTION — BRAND ORANGE (NO BLUE) */
+.custom-select-option.selected {
+  background: #fff7ed;
+  color: #ea580c;
+  font-weight: 700;
+}
+
+.custom-select-option .option-check {
+  font-size: 16px;
+  color: #ea580c;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* CUSTOM SCROLLBAR FOR DROPDOWN */
+.custom-select-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-select-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-select-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-select-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

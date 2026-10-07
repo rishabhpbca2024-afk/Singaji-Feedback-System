@@ -6,6 +6,7 @@ import ssecLogo from "../assets/rename.png";
 import "./FacultyDashboard.css";
 import Modal from "../components/Modal.jsx";
 import ChangePasswordModal from "../components/ChangePasswordModal.jsx";
+import CustomSelect from "../components/CustomSelect.jsx";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -83,6 +84,16 @@ function FacultyDashboard() {
 
   const facultyName = user?.name || "";
   const authUser = JSON.parse(localStorage.getItem("authUser"));
+
+  const facultyOptions = [
+    { value: "", label: "Select Faculty" },
+    ...facultyList
+      .filter((faculty) => faculty.section === user?.department)
+      .map((faculty) => ({
+        value: faculty.facultyId,
+        label: `${faculty.name} (${faculty.facultyId})`,
+      })),
+  ];
 
 
   useEffect(() => {
@@ -1032,7 +1043,7 @@ function FacultyDashboard() {
                     }
                   />
 
-                  <select
+                  <CustomSelect
                     value={newSchedule.slot1FacultyId}
                     onChange={(e) => {
                       const selectedFaculty = facultyList.find(
@@ -1045,20 +1056,9 @@ function FacultyDashboard() {
                         slot1Faculty: selectedFaculty?.name || "",
                       });
                     }}
-                  >
-                    <option value="">Select Faculty</option>
-
-                    {facultyList
-                      .filter((faculty) => faculty.section === user?.department)
-                      .map((faculty) => (
-                        <option
-                          key={faculty.facultyId}
-                          value={faculty.facultyId}
-                        >
-                          {faculty.name} ({faculty.facultyId})
-                        </option>
-                      ))}
-                  </select>
+                    options={facultyOptions}
+                    placeholder="Select Faculty"
+                  />
 
                   {!hasTodaySchedule && (
                     <>
@@ -1166,7 +1166,7 @@ function FacultyDashboard() {
                     }
                   />
 
-                  <select
+                  <CustomSelect
                     value={newSchedule.slot2FacultyId}
                     onChange={(e) => {
                       const selectedFaculty = facultyList.find(
@@ -1179,20 +1179,9 @@ function FacultyDashboard() {
                         slot2Faculty: selectedFaculty?.name || "",
                       });
                     }}
-                  >
-                    <option value="">Select Faculty</option>
-
-                    {facultyList
-                      .filter((faculty) => faculty.section === user?.department)
-                      .map((faculty) => (
-                        <option
-                          key={faculty.facultyId}
-                          value={faculty.facultyId}
-                        >
-                          {faculty.name} ({faculty.facultyId})
-                        </option>
-                      ))}
-                  </select>
+                    options={facultyOptions}
+                    placeholder="Select Faculty"
+                  />
 
                   {!hasTodaySchedule && (
                     <>
@@ -1300,7 +1289,7 @@ function FacultyDashboard() {
                     }
                   />
 
-                  <select
+                  <CustomSelect
                     value={newSchedule.slot3FacultyId}
                     onChange={(e) => {
                       const selectedFaculty = facultyList.find(
@@ -1313,20 +1302,9 @@ function FacultyDashboard() {
                         slot3Faculty: selectedFaculty?.name || "",
                       });
                     }}
-                  >
-                    <option value="">Select Faculty</option>
-
-                    {facultyList
-                      .filter((faculty) => faculty.section === user?.department)
-                      .map((faculty) => (
-                        <option
-                          key={faculty.facultyId}
-                          value={faculty.facultyId}
-                        >
-                          {faculty.name} ({faculty.facultyId})
-                        </option>
-                      ))}
-                  </select>
+                    options={facultyOptions}
+                    placeholder="Select Faculty"
+                  />
 
                   {!hasTodaySchedule && (
                     <>
@@ -1435,33 +1413,22 @@ function FacultyDashboard() {
                       setNewSchedule({ ...newSchedule, slot1Subject: e.target.value })
                     }
                   />
- <select
-  value={newSchedule.slot1FacultyId}
-  onChange={(e) => {
-    const selectedFaculty = facultyList.find(
-      (faculty) => faculty.facultyId === e.target.value
-    );
+                  <CustomSelect
+                    value={newSchedule.slot1FacultyId}
+                    onChange={(e) => {
+                      const selectedFaculty = facultyList.find(
+                        (faculty) => faculty.facultyId === e.target.value
+                      );
 
-    setNewSchedule({
-      ...newSchedule,
-      slot1FacultyId: selectedFaculty?.facultyId || "",
-      slot1Faculty: selectedFaculty?.name || "",
-    });
-  }}
->
-  <option value="">Select Faculty</option>
-
-  {facultyList
-    .filter((faculty) => faculty.section === user?.department)
-    .map((faculty) => (
-      <option
-        key={faculty.facultyId}
-        value={faculty.facultyId}
-      >
-        {faculty.name} ({faculty.facultyId})
-      </option>
-    ))}
-</select>
+                      setNewSchedule({
+                        ...newSchedule,
+                        slot1FacultyId: selectedFaculty?.facultyId || "",
+                        slot1Faculty: selectedFaculty?.name || "",
+                      });
+                    }}
+                    options={facultyOptions}
+                    placeholder="Select Faculty"
+                  />
                   <label>Start Time</label>
                   <input
                     type="time"
@@ -1514,33 +1481,22 @@ function FacultyDashboard() {
                       setNewSchedule({ ...newSchedule, slot2Subject: e.target.value })
                     }
                   />
- <select
-  value={newSchedule.slot2FacultyId}
-  onChange={(e) => {
-    const selectedFaculty = facultyList.find(
-      (faculty) => faculty.facultyId === e.target.value
-    );
+                  <CustomSelect
+                    value={newSchedule.slot2FacultyId}
+                    onChange={(e) => {
+                      const selectedFaculty = facultyList.find(
+                        (faculty) => faculty.facultyId === e.target.value
+                      );
 
-    setNewSchedule({
-      ...newSchedule,
-      slot2FacultyId: selectedFaculty?.facultyId || "",
-      slot2Faculty: selectedFaculty?.name || "",
-    });
-  }}
->
-  <option value="">Select Faculty</option>
-
-  {facultyList
-    .filter((faculty) => faculty.section === user?.department)
-    .map((faculty) => (
-      <option
-        key={faculty.facultyId}
-        value={faculty.facultyId}
-      >
-        {faculty.name} ({faculty.facultyId})
-      </option>
-    ))}
-</select>
+                      setNewSchedule({
+                        ...newSchedule,
+                        slot2FacultyId: selectedFaculty?.facultyId || "",
+                        slot2Faculty: selectedFaculty?.name || "",
+                      });
+                    }}
+                    options={facultyOptions}
+                    placeholder="Select Faculty"
+                  />
                   <label>Start Time</label>
                   <input
                     type="time"
@@ -1593,33 +1549,22 @@ function FacultyDashboard() {
                       setNewSchedule({ ...newSchedule, slot3Subject: e.target.value })
                     }
                   />
-<select
-  value={newSchedule.slot3FacultyId}
-  onChange={(e) => {
-    const selectedFaculty = facultyList.find(
-      (faculty) => faculty.facultyId === e.target.value
-    );
+                  <CustomSelect
+                    value={newSchedule.slot3FacultyId}
+                    onChange={(e) => {
+                      const selectedFaculty = facultyList.find(
+                        (faculty) => faculty.facultyId === e.target.value
+                      );
 
-    setNewSchedule({
-      ...newSchedule,
-      slot3FacultyId: selectedFaculty?.facultyId || "",
-      slot3Faculty: selectedFaculty?.name || "",
-    });
-  }}
->
-  <option value="">Select Faculty</option>
-
-  {facultyList
-    .filter((faculty) => faculty.section === user?.department)
-    .map((faculty) => (
-      <option
-        key={faculty.facultyId}
-        value={faculty.facultyId}
-      >
-        {faculty.name} ({faculty.facultyId})
-      </option>
-    ))}
-</select>
+                      setNewSchedule({
+                        ...newSchedule,
+                        slot3FacultyId: selectedFaculty?.facultyId || "",
+                        slot3Faculty: selectedFaculty?.name || "",
+                      });
+                    }}
+                    options={facultyOptions}
+                    placeholder="Select Faculty"
+                  />
                   <label>Start Time</label>
                   <input
                     type="time"

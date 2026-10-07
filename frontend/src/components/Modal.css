@@ -12,8 +12,9 @@
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 20px;
+  padding: 24px 20px;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -22,9 +23,9 @@
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.5);
   width: 100%;
   max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+  overflow: visible;
   animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  margin: auto;
 }
 
 @keyframes modalPopIn {
@@ -84,6 +85,11 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 18px;
+  position: relative;
+}
+
+.modal-form-group:has(.custom-select-container.open) {
+  z-index: 50;
 }
 
 .modal-form-group label {
@@ -108,11 +114,24 @@
   box-sizing: border-box;
 }
 
+.modal-form-group select {
+  height: 44px;
+  padding-right: 38px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ea580c' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+}
+
 .modal-form-group input:focus,
 .modal-form-group select:focus,
 .modal-form-group textarea:focus {
-  border-color: #f97316;
-  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
+  border-color: #ea580c;
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.15);
 }
 
 .modal-form-group textarea {

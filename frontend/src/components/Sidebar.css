@@ -4,36 +4,20 @@
 
 .sidebar {
   width: 240px;
-  min-height: calc(100vh - 68px);
-  position: fixed;
-  left: 0;
-  top: 68px;
-  z-index: 1000;
-  overflow: hidden;
-}
-
-/*{ 
+  height: 100%;
+  position: relative;
   flex-shrink: 0;
-
-  padding: 20px 12px;
-
-  box-sizing: border-box;
-
+  z-index: 999;
   background: #ffffff;
-
   border-right: 1px solid var(--border-light, #e2e8f0);
-
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-
-  /* Sidebar ke andar scrollbar nahi aayega */
-  /* overflow: hidden;
-
+  overflow: hidden;
   transition:
     width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1); */
-*/
-
+    padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 /* ========================================
    SIDEBAR OPEN
@@ -41,9 +25,8 @@
 
 .sidebar.sidebar-open {
   width: 240px;
-  padding: 20px 12px;
+  padding: 26px 12px 20px 12px;
 }
-
 
 /* ========================================
    SIDEBAR COLLAPSED
@@ -51,12 +34,11 @@
 
 .sidebar.sidebar-collapsed {
   width: 68px;
-  padding: 20px 8px;
+  padding: 26px 8px 20px 8px;
 }
 
-
 /* ========================================
-   SIDEBAR MENU
+   SIDEBAR MENU (TOP NAV ITEMS)
 ======================================== */
 
 .sidebar-menu {
@@ -64,11 +46,15 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
-
-  /* Menu bhi scroll nahi karega */
-  overflow: hidden;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
 }
 
+.sidebar-menu::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
 
 /* ========================================
    SIDEBAR LINK
@@ -77,40 +63,24 @@
 .sidebar-link {
   display: flex;
   align-items: center;
-
   gap: 12px;
-
   width: 100%;
-
   padding: 11px 14px;
-
   box-sizing: border-box;
-
   border-radius: 12px;
-
   color: var(--text-secondary, #475569);
-
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
-
   text-decoration: none;
-
   border: none;
   background: transparent;
-
   cursor: pointer;
-
   text-align: left;
-
-  transition:
-    all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-
   overflow: hidden;
 }
-
 
 /* ========================================
    SIDEBAR ICON
@@ -119,16 +89,12 @@
 .sidebar-icon {
   width: 22px;
   height: 22px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 18px;
-
   flex-shrink: 0;
 }
-
 
 /* ========================================
    SIDEBAR LABEL
@@ -136,16 +102,11 @@
 
 .sidebar-label {
   flex: 1;
-
   overflow: hidden;
-
   white-space: nowrap;
-
   text-overflow: ellipsis;
-
   transition: opacity 0.2s ease;
 }
-
 
 /* ========================================
    COLLAPSED LABEL
@@ -153,12 +114,9 @@
 
 .sidebar-collapsed .sidebar-label {
   opacity: 0;
-
   max-width: 0;
-
   pointer-events: none;
 }
-
 
 /* ========================================
    OPEN LABEL
@@ -166,10 +124,8 @@
 
 .sidebar-open .sidebar-label {
   opacity: 1;
-
   max-width: 200px;
 }
-
 
 /* ========================================
    HOVER
@@ -180,24 +136,16 @@
   color: var(--text-primary, #0f172a);
 }
 
-
 /* ========================================
    ACTIVE LINK
 ======================================== */
 
 .sidebar-link.active {
-  background: linear-gradient(135deg,
-      #f97316 0%,
-      #ea580c 100%);
-
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   color: #ffffff;
-
   font-weight: 700;
-
-  box-shadow:
-    0 4px 14px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 }
-
 
 /* ========================================
    ACTIVE LINK HOVER
@@ -205,12 +153,21 @@
 
 .sidebar-link.active:hover {
   transform: none;
-
-  background: linear-gradient(135deg,
-      #ea580c 0%,
-      #c2410c 100%);
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
 }
 
+/* ========================================
+   SIDEBAR BOTTOM (FOOTER CONTAINER)
+======================================== */
+
+.sidebar-bottom {
+  margin-top: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
 
 /* ========================================
    SEPARATOR
@@ -218,60 +175,56 @@
 
 .sidebar-separator {
   height: 1px;
-
-  background: var(--border-light,
-      #e2e8f0);
-
-  margin: 12px 6px;
-
+  background: var(--border-light, #e2e8f0);
+  margin: 10px 4px 8px 4px;
   flex-shrink: 0;
 }
 
-
 /* ========================================
-   LOGOUT
+   LOGOUT BUTTON (AT BOTTOM)
 ======================================== */
 
 .sidebar-logout-btn {
   color: #64748b;
-
-  margin-top: auto;
 }
-
 
 .sidebar-logout-btn:hover {
   background: #fef2f2;
-
   color: #ef4444;
 }
 
-
 /* ========================================
-   COLLAPSED LINK
+   COLLAPSED LINK ADJUSTMENT
 ======================================== */
 
 .sidebar-collapsed .sidebar-link {
   justify-content: center;
-
   padding: 11px 8px;
 }
-
 
 /* ========================================
    RESPONSIVE
 ======================================== */
 
 @media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 68px;
+    left: 0;
+    bottom: 0;
+    height: calc(100vh - 68px);
+    z-index: 1050;
+  }
 
   .sidebar.sidebar-open {
-    width: 210px;
-
-    padding: 16px 8px;
+    width: 220px;
+    padding: 20px 8px 16px 8px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
   }
 
   .sidebar.sidebar-collapsed {
     width: 0;
-
     padding: 0;
+    border: none;
   }
 }

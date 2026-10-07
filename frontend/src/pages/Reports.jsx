@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { FiAlertTriangle } from "react-icons/fi";
+import CustomSelect from "../components/CustomSelect.jsx";
 import "./Reports.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -102,34 +103,35 @@ function Reports() {
           </p>
         </div>
 
-        <div className="filter-group">
-
+        <div className="reports-filters">
           {/* Department Filter */}
-          <label>Department:</label>
-
-          <select
-            value={selectedDeptFilter}
-            onChange={(e) =>
-              setSelectedDeptFilter(e.target.value)
-            }
-          >
-            <option value="All">All Departments</option>
-            <option value="ITEG">ITEG</option>
-            <option value="MEG">MEG</option>
-            <option value="BEG">BEG</option>
-            <option value="B.Tech">B.Tech</option>
-          </select>
+          <div className="report-filter-item">
+            <label htmlFor="report-dept-filter">Department</label>
+            <CustomSelect
+              id="report-dept-filter"
+              value={selectedDeptFilter}
+              onChange={(e) => setSelectedDeptFilter(e.target.value)}
+              options={[
+                { value: "All", label: "All Departments" },
+                { value: "ITEG", label: "ITEG" },
+                { value: "MEG", label: "MEG" },
+                { value: "BEG", label: "BEG" },
+                { value: "B.Tech", label: "B.Tech" },
+              ]}
+            />
+          </div>
 
           {/* Date Filter */}
-          <label>Report Date:</label>
-
-          <input
-  type="date"
-  className="af-select"
-  value={selectedDate}
-  onChange={(e) => setSelectedDate(e.target.value)}
-/>
-
+          <div className="report-filter-item">
+            <label htmlFor="report-date-filter">Report Date</label>
+            <input
+              id="report-date-filter"
+              type="date"
+              className="reports-select reports-date-input"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
