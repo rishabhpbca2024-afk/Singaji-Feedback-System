@@ -261,3 +261,36 @@
     font-size: 14px;
   }
 }
+
+/* ========================================
+   LAPTOP / DESKTOP (> 768px)
+   Sidebar is ALWAYS 100% permanently open.
+   No toggle or collapsed state on desktop.
+======================================== */
+
+@media (min-width: 769px) {
+  .sidebar,
+  .sidebar.sidebar-open,
+  .sidebar.sidebar-collapsed {
+    width: 240px !important;
+    padding: 24px 12px 20px 12px !important;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .sidebar .sidebar-label,
+  .sidebar.sidebar-open .sidebar-label,
+  .sidebar.sidebar-collapsed .sidebar-label {
+    opacity: 1 !important;
+    max-width: 200px !important;
+    pointer-events: auto !important;
+  }
+
+  .sidebar .sidebar-link,
+  .sidebar.sidebar-open .sidebar-link,
+  .sidebar.sidebar-collapsed .sidebar-link {
+    justify-content: flex-start !important;
+    padding: 11px 14px !important;
+  }
+}

@@ -11,10 +11,20 @@ export function SidebarProvider({ children }) {
   });
 
   const toggleSidebar = () => {
+    // On laptop/desktop (> 768px), sidebar is permanently open and should not toggle
+    if (typeof window !== 'undefined' && window.innerWidth > 768) {
+      setSidebarOpen(true);
+      return;
+    }
     setSidebarOpen((prev) => !prev);
   };
 
   const closeSidebar = () => {
+    // On laptop/desktop (> 768px), sidebar cannot be closed
+    if (typeof window !== 'undefined' && window.innerWidth > 768) {
+      setSidebarOpen(true);
+      return;
+    }
     setSidebarOpen(false);
   };
 
@@ -22,11 +32,11 @@ export function SidebarProvider({ children }) {
     setSidebarOpen(true);
   };
 
-  // Close sidebar automatically on screen resize to mobile
+  // Ensure sidebar is always open when resizing to desktop/laptop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        // keep mobile closed on small screens unless user opened it
+      if (window.innerWidth > 768) {
+        setSidebarOpen(true);
       }
     };
 

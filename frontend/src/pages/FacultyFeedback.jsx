@@ -1,5 +1,31 @@
 import React, { useEffect, useState } from "react";
+import { FaStar } from "react-icons/fa";
+import {
+  FiFileText,
+  FiBookOpen,
+  FiInbox,
+  FiClock,
+  FiMapPin,
+  FiUsers,
+} from "react-icons/fi";
 import "./FacultyFeedback.css";
+
+function StarDisplay({ rating }) {
+  const value = Math.round(Number(rating) || 0);
+  return (
+    <span className="star-display" style={{ display: "inline-flex", gap: "2px" }}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span
+          key={i}
+          className={i <= value ? "star-on" : "star-off"}
+          style={{ color: i <= value ? "#f59e0b" : "#cbd5e1", display: "inline-flex" }}
+        >
+          <FaStar size={11} />
+        </span>
+      ))}
+    </span>
+  );
+}
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -108,22 +134,6 @@ function FacultyFeedback() {
     }
 
     return "rating-low";
-  };
-
-  // =========================================================
-  // STARS
-  // =========================================================
-
-  const getStars = (rating) => {
-    const value = Math.round(Number(rating) || 0);
-
-    if (value <= 0) {
-      return "☆";
-    }
-
-    return "★".repeat(
-      Math.max(0, Math.min(value, 5))
-    );
   };
 
   // =========================================================
@@ -316,7 +326,7 @@ function FacultyFeedback() {
               <div className="feedback-summary-card">
 
                 <div className="summary-icon">
-                  📋
+                  <FiFileText size={22} color="#4f46e5" />
                 </div>
 
                 <div>
@@ -339,7 +349,7 @@ function FacultyFeedback() {
               <div className="feedback-summary-card">
 
                 <div className="summary-icon">
-                  ⭐
+                  <FaStar size={20} color="#f59e0b" />
                 </div>
 
                 <div>
@@ -365,7 +375,7 @@ function FacultyFeedback() {
               <div className="feedback-summary-card">
 
                 <div className="summary-icon">
-                  📚
+                  <FiBookOpen size={22} color="#4f46e5" />
                 </div>
 
                 <div>
@@ -393,7 +403,7 @@ function FacultyFeedback() {
               <div className="no-feedback-card">
 
                 <div className="no-feedback-icon">
-                  📭
+                  <FiInbox size={42} color="#94a3b8" />
                 </div>
 
                 <h2>
@@ -515,7 +525,7 @@ function FacultyFeedback() {
                                 {lecture?.startTime &&
                                   lecture?.endTime && (
                                     <span>
-                                      🕐{" "}
+                                      <FiClock style={{ marginRight: "5px", verticalAlign: "-2px" }} />
                                       {
                                         lecture.startTime
                                       }{" "}
@@ -528,7 +538,7 @@ function FacultyFeedback() {
 
                                 {lecture?.className && (
                                   <span>
-                                    🏫{" "}
+                                    <FiMapPin style={{ marginRight: "5px", verticalAlign: "-2px" }} />
                                     {
                                       lecture.className
                                     }
@@ -541,7 +551,7 @@ function FacultyFeedback() {
                                   lecture.groups
                                     .length > 0 && (
                                     <span>
-                                      👥{" "}
+                                      <FiUsers style={{ marginRight: "5px", verticalAlign: "-2px" }} />
                                       {lecture.groups.join(
                                         ", "
                                       )}
@@ -593,15 +603,7 @@ function FacultyFeedback() {
                                   )}
                                 </strong>
 
-                                <span
-                                  className={`rating-stars ${getRatingClass(
-                                    explanation
-                                  )}`}
-                                >
-                                  {getStars(
-                                    explanation
-                                  )}
-                                </span>
+                                <StarDisplay rating={explanation} />
 
                               </div>
 
@@ -624,15 +626,7 @@ function FacultyFeedback() {
                                   )}
                                 </strong>
 
-                                <span
-                                  className={`rating-stars ${getRatingClass(
-                                    punctuality
-                                  )}`}
-                                >
-                                  {getStars(
-                                    punctuality
-                                  )}
-                                </span>
+                                <StarDisplay rating={punctuality} />
 
                               </div>
 
@@ -655,15 +649,7 @@ function FacultyFeedback() {
                                   )}
                                 </strong>
 
-                                <span
-                                  className={`rating-stars ${getRatingClass(
-                                    engagement
-                                  )}`}
-                                >
-                                  {getStars(
-                                    engagement
-                                  )}
-                                </span>
+                                <StarDisplay rating={engagement} />
 
                               </div>
 
@@ -686,15 +672,7 @@ function FacultyFeedback() {
                                   )}
                                 </strong>
 
-                                <span
-                                  className={`rating-stars ${getRatingClass(
-                                    resolution
-                                  )}`}
-                                >
-                                  {getStars(
-                                    resolution
-                                  )}
-                                </span>
+                                <StarDisplay rating={resolution} />
 
                               </div>
 
@@ -717,13 +695,7 @@ function FacultyFeedback() {
                                   )}
                                 </strong>
 
-                                <span
-                                  className={`rating-stars ${getRatingClass(
-                                    overall
-                                  )}`}
-                                >
-                                  {getStars(overall)}
-                                </span>
+                                <StarDisplay rating={overall} />
 
                               </div>
 

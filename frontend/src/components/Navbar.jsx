@@ -33,9 +33,17 @@ function Navbar() {
     }
   };
 
+  const handleBrandClick = () => {
+    if (isAdmin) {
+      navigate("/admin/dashboard");
+    } else if (isFaculty) {
+      navigate("/faculty/dashboard");
+    }
+  };
+
   return (
     <header className="navbar">
-      {/* Left Side — Toggle button & Brand */}
+      {/* Left Side — Mobile Toggle button & Brand */}
       <div className="navbar-left">
         <button
           type="button"
@@ -49,9 +57,8 @@ function Navbar() {
 
         <div
           className="navbar-brand"
-          onClick={toggleSidebar}
-          style={{ cursor: "pointer" }}
-          title="Toggle sidebar"
+          onClick={handleBrandClick}
+          title="Singaji Educational Society"
         >
           <img
             src={ssecLogo}

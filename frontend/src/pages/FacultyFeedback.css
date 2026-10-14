@@ -382,21 +382,20 @@
     font-size: 17px;
 }
 
-.rating-stars {
-    font-size: 12px;
-    letter-spacing: 1px;
+.star-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
 }
 
-.rating-good {
-    color: #16a34a;
+.star-on {
+    color: #f59e0b;
+    display: inline-flex;
 }
 
-.rating-average {
-    color: #d97706;
-}
-
-.rating-low {
-    color: #dc2626;
+.star-off {
+    color: #cbd5e1;
+    display: inline-flex;
 }
 
 
