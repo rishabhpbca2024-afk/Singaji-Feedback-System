@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-// Placeholder base URL – replace with actual backend URL when ready
-const API_BASE_URL = 'http://localhost:5000/api';
+// Backend API base URL
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001') + '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

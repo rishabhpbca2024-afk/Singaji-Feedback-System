@@ -83,7 +83,6 @@ function FacultyDashboard() {
   });
 
   const facultyName = user?.name || "";
-  const authUser = JSON.parse(localStorage.getItem("authUser"));
 
   const facultyOptions = [
     { value: "", label: "Select Faculty" },

@@ -7,12 +7,14 @@ import megImage from "../assets/meg.png";
 import begImage from "../assets/beg.png";
 import ssecImage from "../assets/ssec.png";
 import Modal from "../components/Modal.jsx";
+import useAuth from "../hooks/useAuth.js";
 
 import "./ManageFaculty.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function ManageFaculty() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [selectedDepartment, setSelectedDepartment] = useState(null);
@@ -120,7 +122,6 @@ function ManageFaculty() {
     setIsEditModalOpen(true);
   };
 
-  const authUser = JSON.parse(localStorage.getItem("authUser"));
   // Save Edit Faculty
   const handleSaveEdit = async (e) => {
     e.preventDefault();

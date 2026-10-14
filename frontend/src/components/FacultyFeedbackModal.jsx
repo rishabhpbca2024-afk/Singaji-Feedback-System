@@ -11,6 +11,7 @@ import {
   FiChevronUp,
   FiChevronDown,
 } from "react-icons/fi";
+import useAuth from "../hooks/useAuth.js";
 import "./FacultyFeedbackModal.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -40,8 +41,7 @@ function FacultyFeedbackModal({
   const [viewData, setViewData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-    const authUser = JSON.parse(localStorage.getItem("authUser"));
+  const { user } = useAuth();
 
 
   useEffect(() => {

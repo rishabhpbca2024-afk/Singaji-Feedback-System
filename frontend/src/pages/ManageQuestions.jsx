@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import Modal from "../components/Modal.jsx";
 import CustomSelect from "../components/CustomSelect.jsx";
+import useAuth from "../hooks/useAuth.js";
 import "./ManageQuestions.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function ManageQuestions() {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState([]);
 
   const categories = [
@@ -16,8 +18,6 @@ function ManageQuestions() {
     "Classroom Management",
     "Overall Experience",
   ];
-
-const authUser = JSON.parse(localStorage.getItem("authUser"));
 
   useEffect(() => {
   const fetchQuestions = async () => {

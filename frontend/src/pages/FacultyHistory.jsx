@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { FiArrowLeft, FiMail } from "react-icons/fi";
+import useAuth from "../hooks/useAuth.js";
 import "./FacultyHistory.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function FacultyHistory() {
+  const { user } = useAuth();
   const { facultyId } = useParams();
   const navigate = useNavigate();
 
@@ -14,8 +16,6 @@ function FacultyHistory() {
   const [historyData, setHistoryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const authUser = JSON.parse(localStorage.getItem("authUser"));
 
   // =========================================================
   // FORMAT DATE

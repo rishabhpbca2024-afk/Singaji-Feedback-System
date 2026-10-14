@@ -3,6 +3,7 @@ import { FaStar } from "react-icons/fa";
 import { FiAlertTriangle } from "react-icons/fi";
 import FacultyFeedbackModal from "../components/FacultyFeedbackModal.jsx";
 import CustomSelect from "../components/CustomSelect.jsx";
+import useAuth from "../hooks/useAuth.js";
 import "./AdminFeedback.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -85,7 +86,7 @@ function AdminFeedback() {
     useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const authUser = JSON.parse(localStorage.getItem("authUser"));
+  const { user } = useAuth();
   // ==========================================
   // FETCH FEEDBACKS
   // ==========================================

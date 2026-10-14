@@ -6,10 +6,15 @@ import { SidebarProvider } from "../context/SidebarContext.jsx";
 import "./Layout.css";
 
 function FacultyLayout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Prevent non-Faculty users from accessing Faculty portal layout
+  if (user.role !== "Faculty") {
+    return <Navigate to={user.role === "Admin" ? "/admin/dashboard" : "/login"} replace />;
   }
 
   return (

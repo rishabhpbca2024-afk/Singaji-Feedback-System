@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 import { FiAlertTriangle } from "react-icons/fi";
 import CustomSelect from "../components/CustomSelect.jsx";
+import useAuth from "../hooks/useAuth.js";
 import "./Reports.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 
 function Reports() {
+  const { user } = useAuth();
   const allDepartments = ["ITEG", "MEG", "BEG", "B.Tech"];
 
   const [selectedDeptFilter, setSelectedDeptFilter] = useState("All");
@@ -37,7 +39,6 @@ function Reports() {
   const [departmentReports, setDepartmentReports] = useState([]);
   const [topFaculty, setTopFaculty] = useState([]);
   const [lowScoreAlerts, setLowScoreAlerts] = useState([]);
-  const authUser = JSON.parse(localStorage.getItem("authUser"));
   // =========================================================
   // FETCH REPORT WHEN DATE CHANGES
   // =========================================================

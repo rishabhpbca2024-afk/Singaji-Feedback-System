@@ -6,10 +6,15 @@ import { SidebarProvider } from "../context/SidebarContext.jsx";
 import "./Layout.css";
 
 function Layout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Prevent non-Admin users from accessing Admin dashboard and settings
+  if (user.role !== "Admin") {
+    return <Navigate to={user.role === "Faculty" ? "/faculty/dashboard" : "/login"} replace />;
   }
 
   return (

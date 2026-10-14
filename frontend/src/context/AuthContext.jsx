@@ -14,7 +14,12 @@ export function AuthProvider({ children }) {
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return !!localStorage.getItem('authUser');
+    try {
+      const storedUser = localStorage.getItem('authUser');
+      return !!(storedUser && JSON.parse(storedUser));
+    } catch {
+      return false;
+    }
   });
 
   const login = (userData) => {
