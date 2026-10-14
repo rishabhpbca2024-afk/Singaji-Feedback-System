@@ -3,26 +3,34 @@ import api from './api.js';
 /**
  * Auth Service
  * Handles login, registration, and logout API calls.
- * Real implementation will be connected to the backend.
  */
 
 // Login a user
 export const login = async (credentials) => {
-  // TODO: implement when backend is ready
-  // const response = await api.post('/auth/login', credentials);
-  // return response.data;
-  throw new Error('login() not yet implemented');
+  const response = await api.post('/auth/login', credentials);
+  return response.data;
 };
 
 // Register a new user
 export const register = async (userData) => {
-  // TODO: implement when backend is ready
-  // const response = await api.post('/auth/register', userData);
-  // return response.data;
-  throw new Error('register() not yet implemented');
+  const response = await api.post('/auth/register', userData);
+  return response.data;
 };
 
-// Logout (client-side)
-export const logout = () => {
-  localStorage.removeItem('token');
+// Logout
+export const logout = async () => {
+  try {
+    await api.post('/auth/logout');
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    localStorage.removeItem('token');
+    localStorage.removeItem('authUser');
+  }
+};
+
+export default {
+  login,
+  register,
+  logout,
 };

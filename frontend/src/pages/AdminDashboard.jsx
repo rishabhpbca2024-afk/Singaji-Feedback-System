@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGraduationCap, FaStar } from "react-icons/fa";
 import { FiAlertTriangle, FiCheckCircle, FiSettings } from "react-icons/fi";
-import useAuth from "../hooks/useAuth.js";
 const API_URL = import.meta.env.VITE_API_URL;
 
 import "./AdminDashboard.css";
@@ -20,7 +19,6 @@ function StarRating({ value }) {
 }
 
 function AdminDashboard() {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [recentFeedback, setRecentFeedback] = useState([]);
   const [lowScoreFeedback, setLowScoreFeedback] = useState([]);
