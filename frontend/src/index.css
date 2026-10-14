@@ -59,14 +59,14 @@ body {
 }
 
 /* =============================================
-   GLOBAL FORM CONTROLS & DROPDOWNS (ORANGE THEME)
+   GLOBAL FORM CONTROLS & DROPDOWNS (THEME AWARE)
    ============================================= */
 
 select {
-  accent-color: #ea580c;
+  accent-color: var(--primary, #f97316);
   font-family: inherit;
   color: var(--text-primary, #0f172a);
-  background-color: #ffffff;
+  background-color: var(--bg-surface, #ffffff);
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -74,27 +74,27 @@ select {
 select:focus,
 select:focus-visible {
   outline: none !important;
-  border-color: #ea580c !important;
-  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18) !important;
+  border-color: var(--primary, #f97316) !important;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 249, 115, 22), 0.18) !important;
 }
 
 /* Dropdown option styles in modern browsers */
 select option {
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: var(--bg-surface, #ffffff);
+  color: var(--text-primary, #0f172a);
   padding: 8px 12px;
 }
 
 select option:checked {
-  background: #ea580c !important;
-  background-color: #ea580c !important;
+  background: var(--primary, #f97316) !important;
+  background-color: var(--primary, #f97316) !important;
   color: #ffffff !important;
 }
 
 select option:hover,
 select option:focus {
-  background-color: #fff7ed !important;
-  color: #ea580c !important;
+  background-color: var(--primary-subtle, #fff7ed) !important;
+  color: var(--primary, #f97316) !important;
 }
 
 /* Global input focus state */
@@ -103,8 +103,8 @@ input:focus-visible,
 textarea:focus,
 textarea:focus-visible {
   outline: none;
-  border-color: #ea580c;
-  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+  border-color: var(--primary, #f97316);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 249, 115, 22), 0.15);
 }
 
 /* =============================================
@@ -152,15 +152,15 @@ textarea:focus-visible {
 
 /* View / History */
 .btn-view {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, var(--primary, #f97316) 0%, var(--primary-hover, #ea580c) 100%);
   border: none;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+  box-shadow: 0 2px 8px rgba(var(--primary-rgb, 249, 115, 22), 0.25);
 }
 
 .btn-view:hover {
-  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+  background: linear-gradient(135deg, var(--primary-hover, #ea580c) 0%, var(--primary-active, #c2410c) 100%);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb, 249, 115, 22), 0.35);
 }
 
 /* Delete */

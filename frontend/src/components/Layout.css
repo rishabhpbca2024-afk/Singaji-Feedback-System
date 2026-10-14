@@ -5,11 +5,13 @@
 .app-layout {
   height: 100vh;
   width: 100%;
-  background: #f5f7fb;
+  background: var(--bg-main, #f8fafc);
+  color: var(--text-primary, #0f172a);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 

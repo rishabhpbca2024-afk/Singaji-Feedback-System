@@ -29,6 +29,7 @@ import Reports from "../pages/Reports.jsx";
 import ManageCourses from "../pages/ManageCourses.jsx";
 import ManageLectures from "../pages/ManageLectures.jsx";
 import AdminFeedback from "../pages/AdminFeedback.jsx";
+import AdminSettings from "../pages/AdminSettings.jsx";
 
 import Layout from "../components/Layout.jsx";
 import FacultyLayout from "../components/FacultyLayout.jsx";
@@ -207,6 +208,14 @@ function AppRoutes() {
           <Route
             path="reports"
             element={<Reports />}
+          />
+
+
+          {/* Settings */}
+
+          <Route
+            path="settings"
+            element={<AdminSettings />}
           />
 
         </Route>

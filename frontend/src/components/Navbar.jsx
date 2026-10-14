@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiKey } from "react-icons/fi";
+import { FiSettings, FiShield } from "react-icons/fi";
 import useAuth from "../hooks/useAuth.js";
 import { useSidebar } from "../context/SidebarContext.jsx";
-import AdminChangePasswordModal from "./AdminChangePasswordModal.jsx";
 import "./Navbar.css";
 import ssecLogo from "../assets/rename.png";
 
@@ -11,11 +9,28 @@ function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { toggleSidebar } = useSidebar();
-  const [isAdminPasswordModalOpen, setIsAdminPasswordModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
+  };
+
+  const isAdmin = user?.role === "Admin";
+  const isFaculty = user?.role === "Faculty";
+
+  // Clean, non-redundant display names
+  const displayName = isAdmin
+    ? (!user?.name || user.name.toLowerCase() === "admin" ? "Administrator" : user.name)
+    : (user?.name || "Faculty Member");
+
+  const displayRole = isAdmin ? "Super Admin" : (user?.role || "Faculty");
+
+  const handleProfileClick = () => {
+    if (isAdmin) {
+      navigate("/admin/settings");
+    } else if (isFaculty) {
+      navigate("/faculty/profile");
+    }
   };
 
   return (
@@ -41,44 +56,43 @@ function Navbar() {
 
       {/* Right Side */}
       <div className="navbar-right">
-        <div className="navbar-user">
-          <span className="navbar-user-name">
-            {user?.name || "Admin"}
-          </span>
+        {/* User Profile Pill — Clickable to open Settings/Profile */}
+        <div
+          className="navbar-user-chip"
+          onClick={handleProfileClick}
+          title={isAdmin ? "Open Admin Settings & Profile" : "View Profile"}
+        >
+          <div className="navbar-avatar">
+            {isAdmin ? (
+              <FiShield className="avatar-shield-icon" size={16} />
+            ) : (
+              <span className="avatar-initial">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
 
-          <span className="navbar-user-role">
-            {user?.role || "Administrator"}
-          </span>
+          <div className="navbar-user-info">
+            <span className="navbar-user-name">{displayName}</span>
+            <span className="navbar-user-role">{displayRole}</span>
+          </div>
+
+          {isAdmin && (
+            <span className="navbar-settings-indicator" title="Settings">
+              <FiSettings size={14} />
+            </span>
+          )}
         </div>
 
-        {/* Simple Change Password option for Admin */}
-        {user?.role === "Admin" && (
-          <button
-            type="button"
-            className="navbar-change-pwd"
-            onClick={() => setIsAdminPasswordModalOpen(true)}
-            title="Change Admin Password"
-          >
-            <FiKey size={14} />
-            <span>Change Password</span>
-          </button>
-        )}
-
+        {/* Logout Button */}
         <button
+          type="button"
           className="navbar-logout"
           onClick={handleLogout}
         >
           Logout
         </button>
       </div>
-
-      {/* Admin Change Password Modal */}
-      {user?.role === "Admin" && (
-        <AdminChangePasswordModal
-          isOpen={isAdminPasswordModalOpen}
-          onClose={() => setIsAdminPasswordModalOpen(false)}
-        />
-      )}
     </header>
   );
 }

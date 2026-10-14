@@ -33,9 +33,9 @@
 }
 
 .btn-admin-change-pwd {
-  background: #ffffff;
-  color: #ea580c;
-  border: 1.5px solid #fed7aa;
+  background: var(--bg-surface, #ffffff);
+  color: var(--primary-hover, #ea580c);
+  border: 1.5px solid var(--primary-light, #fed7aa);
   padding: 9px 18px;
   border-radius: 10px;
   font-size: 13px;
@@ -49,9 +49,10 @@
 }
 
 .btn-admin-change-pwd:hover {
-  background: #fff7ed;
-  border-color: #ea580c;
-  color: #c2410c;
+  background: var(--primary-subtle, #fff7ed);
+  border-color: var(--primary, #ea580c);
+  color: var(--primary-active, #c2410c);
+  box-shadow: 0 3px 10px rgba(var(--primary-rgb, 249, 115, 22), 0.15);
 }
 
 /* ========================================
