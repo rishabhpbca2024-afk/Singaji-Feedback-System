@@ -291,3 +291,27 @@
   margin: 0 0 24px 0;
   line-height: 1.5;
 }
+
+/* ========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+======================================== */
+
+@media (max-width: 600px) {
+  .activate-navbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .activate-navbar-full {
+    display: none;
+  }
+
+  .activate-content {
+    padding: 24px 14px;
+  }
+
+  .activate-card {
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+}

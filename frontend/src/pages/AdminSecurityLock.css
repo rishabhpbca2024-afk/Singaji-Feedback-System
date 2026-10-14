@@ -429,3 +429,32 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(22, 163, 74, 0.4);
 }
+
+/* ========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+======================================== */
+
+@media (max-width: 600px) {
+  .asl-navbar {
+    padding: 0 16px;
+    height: 56px;
+  }
+
+  .asl-navbar-full {
+    display: none;
+  }
+
+  .asl-container {
+    padding: 20px 14px;
+  }
+
+  .asl-card {
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+
+  .asl-btn-login {
+    width: 100%;
+    justify-content: center;
+  }
+}

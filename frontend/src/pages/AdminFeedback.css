@@ -172,6 +172,8 @@ input[type="date"].af-select {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
 }
 
 .af-table {
@@ -354,21 +356,55 @@ input[type="date"].af-select {
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 768px) {
   .af-header {
     flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .af-header h1 {
+    font-size: 24px;
+  }
+
+  .af-header p {
+    font-size: 13px;
+  }
+
+  .af-alert-pill {
+    align-self: flex-start;
   }
 
   .af-summary-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .af-summary-card {
+    padding: 14px;
+  }
+
+  .af-summary-value {
+    font-size: 22px;
   }
 
   .af-filters {
     flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
   }
 
-  .af-search {
+  .af-search,
+  .af-select,
+  input[type="date"].af-select {
+    width: 100%;
     min-width: unset;
+  }
+}
+
+@media (max-width: 420px) {
+  .af-summary-grid {
+    grid-template-columns: 1fr;
   }
 }
 

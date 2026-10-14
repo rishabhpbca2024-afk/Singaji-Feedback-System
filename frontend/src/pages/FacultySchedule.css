@@ -117,6 +117,7 @@
 .table-responsive {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .academic-timetable {
@@ -193,15 +194,54 @@
 }
 
 @media (max-width: 768px) {
+    .faculty-page-header h1 {
+        font-size: 24px;
+    }
+
+    .faculty-page-header p {
+        font-size: 13px;
+    }
+
+    .faculty-summary-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .faculty-stat-card {
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    .timetable-wrapper {
+        padding: 16px 12px;
+        border-radius: 12px;
+    }
+
     .timetable-header-top {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 14px;
+        margin-bottom: 16px;
+        padding-bottom: 14px;
     }
     
+    .institute-info h2 {
+        font-size: 16px;
+    }
+
+    .institute-info p {
+        font-size: 13px;
+    }
+
     .btn-share-schedule {
         width: 100%;
         justify-content: center;
+        padding: 12px;
     }
 }
 

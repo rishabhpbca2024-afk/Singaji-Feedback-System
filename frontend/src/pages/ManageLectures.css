@@ -449,6 +449,9 @@
 .schedule-table-wrapper {
     width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
 }
 
 .admin-academic-timetable {
@@ -551,10 +554,24 @@
 ======================================== */
 
 @media (max-width: 768px) {
+    .lectures-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .lectures-header h1 {
+        font-size: 24px;
+    }
+
+    .lectures-header p {
+        font-size: 13px;
+    }
 
     .lecture-filters {
         width: 100%;
         align-items: stretch;
+        gap: 12px;
     }
 
     .lecture-search-filter,
@@ -563,10 +580,16 @@
         width: 100%;
     }
 
+    .search-input-wrapper,
+    .select-input-wrapper {
+        width: 100%;
+    }
+
     .search-input-wrapper input,
     .lecture-date-filter input,
     .lecture-faculty-filter select {
         width: 100%;
+        box-sizing: border-box;
     }
 
     .lecture-filter-info {
@@ -582,35 +605,35 @@
     .department-section-header h2 {
         font-size: 18px;
     }
-}
 
-
-/* ========================================
-   MOBILE DATE
-======================================== */
-
-@media (max-width: 600px) {
-
-    .lecture-date-filter {
-        width: 100%;
+    .faculty-availability-card {
+        padding: 16px;
+        border-radius: 12px;
     }
 
-    .lecture-date-filter input {
-        flex: 1;
-    }
-}
-
-
-/* ========================================
-   OLD CARD RESPONSIVE
-======================================== */
-
-@media (max-width: 750px) {
-
-    .lectures-header {
+    .faculty-card-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: 10px;
+    }
+
+    .faculty-status-badges {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .scheduled-lectures-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .faculty-free-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .free-slots-list {
+        width: 100%;
     }
 
     .lecture-row-card {

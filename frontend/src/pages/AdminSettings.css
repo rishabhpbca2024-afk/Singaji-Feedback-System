@@ -851,25 +851,143 @@
   color: var(--text-primary, #0f172a);
 }
 
-@media (max-width: 640px) {
-  .settings-tabs-nav {
-    width: 100%;
-    overflow-x: auto;
+@media (max-width: 768px) {
+  .settings-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 14px;
   }
-  .settings-tab-btn {
-    padding: 8px 12px;
+
+  .settings-title-group h1 {
+    font-size: 22px;
+  }
+
+  .settings-title-group p {
     font-size: 13px;
   }
+
+  .settings-tabs-nav {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 4px;
+  }
+
+  .settings-tabs-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .settings-tab-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
   .profile-hero-content {
     flex-direction: column;
     align-items: flex-start;
+    padding: 0 18px 20px 18px;
+    margin-top: -36px;
+    gap: 14px;
   }
+
+  .profile-avatar-large {
+    width: 76px;
+    height: 76px;
+  }
+
+  .profile-meta {
+    min-width: unset;
+    width: 100%;
+  }
+
   .profile-hero-actions {
     width: 100%;
-    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
   }
+
+  .btn-profile-action {
+    flex: 1;
+    min-width: 130px;
+    justify-content: center;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .settings-card {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  .permissions-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .palette-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .pwd-form-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .btn-submit-pwd,
+  .btn-cancel-pwd {
+    width: 100%;
+    justify-content: center;
+  }
+
   .preview-box-container {
     flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 14px;
+  }
+
+  .preview-reset-row {
+    justify-content: stretch;
+  }
+
+  .btn-reset-theme {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-row {
+    flex-direction: column;
     align-items: flex-start;
+    gap: 4px;
+  }
+
+  .info-value {
+    text-align: left;
+    width: 100%;
+  }
+
+  .palette-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .palette-grid {
+    grid-template-columns: 1fr;
   }
 }

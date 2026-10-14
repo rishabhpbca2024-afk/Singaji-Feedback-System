@@ -224,11 +224,36 @@
 }
 
 @media (max-width: 520px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
   .modal-content {
     max-width: 100%;
     border-radius: 18px;
+    max-height: 92vh;
+    overflow-y: auto;
   }
-  .modal-header, .modal-body {
-    padding: 18px 20px;
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 17px;
+  }
+
+  .modal-body {
+    padding: 16px 18px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .modal-actions button {
+    width: 100%;
   }
 }
+

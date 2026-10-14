@@ -93,13 +93,22 @@ const Icons = {
 };
 
 function FacultySidebar() {
-  const { sidebarOpen } = useSidebar();
+  const { sidebarOpen, closeSidebar } = useSidebar();
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    if (typeof window !== "undefined" && window.innerWidth <= 768) {
+      closeSidebar();
+    }
     logout();
     navigate("/login", { replace: true });
+  };
+
+  const handleNavClick = () => {
+    if (typeof window !== "undefined" && window.innerWidth <= 768) {
+      closeSidebar();
+    }
   };
 
   const navItems = [
@@ -139,6 +148,7 @@ function FacultySidebar() {
             className={({ isActive }) =>
               `sidebar-link${isActive ? " active" : ""}`
             }
+            onClick={handleNavClick}
             title={!sidebarOpen ? item.label : undefined}
           >
             <span className="sidebar-icon">{item.icon}</span>

@@ -338,14 +338,75 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .reports-header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .reports-header h1 {
+        font-size: 24px;
+    }
+
+    .reports-header p {
+        font-size: 13px;
+    }
+
+    .reports-filters {
+        flex-direction: column;
+        align-items: stretch;
         gap: 12px;
+        width: 100%;
+    }
+
+    .report-filter-item {
+        width: 100%;
+    }
+
+    .reports-select,
+    .reports-date-input {
+        width: 100%;
+        min-width: unset;
+        box-sizing: border-box;
+    }
+
+    .reports-kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .kpi-report-card {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .kpi-main-val {
+        font-size: 26px;
+    }
+
+    .reports-section-card {
+        padding: 18px 16px;
+        border-radius: 14px;
+        margin-bottom: 16px;
     }
 
     .dept-perf-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .reports-two-col {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .leaderboard-item {
+        padding: 10px 14px;
+    }
+
+    .alert-item {
+        padding: 12px 14px;
     }
 }

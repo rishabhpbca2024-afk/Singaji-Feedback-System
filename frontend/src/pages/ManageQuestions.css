@@ -149,15 +149,108 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
+.q-actions .btn-edit,
+.q-actions .btn-delete {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.q-actions .btn-edit {
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  color: var(--text-secondary, #475569);
+}
+
+.q-actions .btn-edit:hover {
+  background: #f8fafc;
+  color: var(--text-primary, #0f172a);
+  border-color: #cbd5e1;
+}
+
+.q-actions .btn-delete {
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.q-actions .btn-delete:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #b91c1c;
+}
+
+.no-data-box {
+  padding: 36px 20px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px dashed var(--border-light, #e2e8f0);
+  border-radius: 14px;
+  color: var(--text-secondary, #64748b);
+  font-size: 14px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+======================================== */
+
+@media (max-width: 768px) {
+  .courses-header,
+  .questions-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .courses-header h1,
+  .questions-header h1 {
+    font-size: 24px;
+  }
+
+  .courses-header p,
+  .questions-header p {
+    font-size: 13px;
+  }
+
+  .add-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+  }
+
   .question-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .q-content {
+    width: 100%;
   }
 
   .q-actions {
     width: 100%;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .q-actions .btn-edit,
+  .q-actions .btn-delete {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
   }
 }

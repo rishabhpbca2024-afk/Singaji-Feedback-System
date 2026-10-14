@@ -45,11 +45,42 @@
 
 
 /* ========================================
+   MOBILE BACKDROP OVERLAY
+======================================== */
+
+.sidebar-mobile-backdrop {
+  display: none;
+}
+
+/* ========================================
    MOBILE
 ======================================== */
 
 @media (max-width: 768px) {
+  .app-body {
+    height: calc(100vh - 62px);
+  }
+
   .main-content {
-    padding: 20px 16px;
+    padding: 18px 12px;
+  }
+
+  .sidebar-mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 62px;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 1040;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .sidebar-mobile-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
   }
 }

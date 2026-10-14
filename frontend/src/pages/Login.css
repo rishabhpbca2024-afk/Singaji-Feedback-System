@@ -30,8 +30,8 @@
   background-size: cover;
   background-position: center bottom;
   background-repeat: no-repeat;
-  box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ══════════════════════════════════════

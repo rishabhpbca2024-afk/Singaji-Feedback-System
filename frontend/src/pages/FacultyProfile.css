@@ -434,5 +434,86 @@
 @media (max-width: 850px) {
   .profile-card-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .faculty-profile-page {
+    padding: 16px 14px;
+  }
+
+  .profile-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .profile-page-header h1 {
+    font-size: 22px;
+  }
+
+  .btn-edit-profile,
+  .btn-change-password-header {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .profile-warning-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .btn-banner-action {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .profile-sidebar-card,
+  .profile-details-card,
+  .profile-security-card {
+    padding: 18px 16px;
+    border-radius: 14px;
+  }
+
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-group-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .security-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-security-change {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
   }
 }

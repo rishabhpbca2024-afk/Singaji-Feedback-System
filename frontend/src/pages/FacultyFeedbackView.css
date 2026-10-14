@@ -172,12 +172,15 @@
 
 .ffv-table-responsive {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
+  width: 100%;
 }
 
 .ffv-matrix-table {
   width: 100%;
+  min-width: 500px;
   border-collapse: collapse;
   font-size: 13px;
 }
@@ -240,4 +243,73 @@
   color: #475569;
   font-style: italic;
   border-left: 3px solid #6366f1;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+======================================== */
+
+@media (max-width: 768px) {
+  .ffv-page {
+    padding: 16px 14px;
+  }
+
+  .ffv-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .ffv-header h1 {
+    font-size: 22px;
+  }
+
+  .ffv-faculty-pill {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-between;
+  }
+
+  .ffv-stats-strip {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .ffv-stat-card {
+    padding: 14px;
+  }
+
+  .ffv-lecture-card {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .ffv-lecture-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .ffv-rating-box {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .ffv-lec-details {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ffv-stats-strip {
+    grid-template-columns: 1fr;
+  }
 }

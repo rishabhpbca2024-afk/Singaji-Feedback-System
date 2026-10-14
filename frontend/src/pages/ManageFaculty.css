@@ -210,19 +210,28 @@
    FACULTY ACTIONS & MODAL
 ======================================== */
 
+/* ========================================
+   FACULTY ACTIONS & MODAL
+======================================== */
+
 .faculty-actions {
     display: flex;
     gap: 10px;
 }
 
 .btn-edit,
-.btn-view {
+.btn-view,
+.btn-delete {
     padding: 9px 16px;
     border-radius: 10px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .btn-edit {
@@ -249,6 +258,28 @@
     box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
 }
 
+.btn-delete {
+    background: #ffffff;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+}
+
+.btn-delete:hover {
+    background: #fef2f2;
+    border-color: #f87171;
+    color: #b91c1c;
+}
+
+.faculty-empty {
+    padding: 32px 20px;
+    text-align: center;
+    background: #ffffff;
+    border: 1px dashed var(--border-light, #e2e8f0);
+    border-radius: 14px;
+    color: var(--text-secondary, #64748b);
+    font-size: 14px;
+}
+
 .faculty-count {
     width: fit-content;
     margin-top: 24px;
@@ -261,18 +292,93 @@
     font-weight: 600;
 }
 
+/* ========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+======================================== */
+
 @media (max-width: 1100px) {
     .faculty-department-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
+    .manage-faculty h1 {
+        font-size: 24px;
+    }
+
+    .faculty-page-title p {
+        font-size: 13px;
+    }
+
     .faculty-department-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 20px;
     }
-    .faculty-header, .faculty-row {
+
+    .faculty-department-card {
+        min-height: 180px;
+        padding: 22px 18px;
+        border-radius: 16px;
+    }
+
+    .faculty-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .add-faculty-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+    }
+
+    .faculty-back-button {
+        width: 100%;
+        text-align: center;
+        padding: 12px;
+    }
+
+    .faculty-row {
         flex-direction: column;
         align-items: flex-start;
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .faculty-info {
+        width: 100%;
+    }
+
+    .faculty-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1.3fr 1fr;
+        gap: 8px;
+    }
+
+    .btn-edit,
+    .btn-view,
+    .btn-delete {
+        width: 100%;
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .faculty-count {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .faculty-actions {
+        grid-template-columns: 1fr;
     }
 }

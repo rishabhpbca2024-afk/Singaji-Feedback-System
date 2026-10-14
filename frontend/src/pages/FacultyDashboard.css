@@ -204,3 +204,46 @@
 .btn-banner-change:hover {
   background: #b45309;
 }
+
+/* ========================================
+   RESPONSIVE — MOBILE & TABLET
+======================================== */
+@media (max-width: 768px) {
+  .faculty-toast {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+
+  .faculty-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .faculty-date-display {
+    text-align: left;
+    padding: 10px 16px;
+  }
+
+  .schedule-section {
+    padding: 16px 12px;
+    border-radius: 14px;
+  }
+
+  .faculty-must-change-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .btn-banner-change {
+    width: 100%;
+    text-align: center;
+  }
+}
+

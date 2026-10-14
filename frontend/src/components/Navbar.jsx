@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FiSettings, FiShield } from "react-icons/fi";
+import { FiSettings, FiShield, FiMenu, FiX } from "react-icons/fi";
 import useAuth from "../hooks/useAuth.js";
 import { useSidebar } from "../context/SidebarContext.jsx";
 import "./Navbar.css";
@@ -8,7 +8,7 @@ import ssecLogo from "../assets/rename.png";
 function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { toggleSidebar } = useSidebar();
+  const { sidebarOpen, toggleSidebar } = useSidebar();
 
   const handleLogout = () => {
     logout();
@@ -35,22 +35,34 @@ function Navbar() {
 
   return (
     <header className="navbar">
-      {/* Left Side — Logo toggles sidebar */}
-      <div
-        className="navbar-brand"
-        onClick={toggleSidebar}
-        style={{ cursor: "pointer" }}
-        title="Toggle sidebar"
-      >
-        <img
-          src={ssecLogo}
-          alt="Singaji Educational Society"
-          className="navbar-logo"
-        />
+      {/* Left Side — Toggle button & Brand */}
+      <div className="navbar-left">
+        <button
+          type="button"
+          className="navbar-toggle-btn"
+          onClick={toggleSidebar}
+          aria-label={sidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+          title={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+        >
+          {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+        </button>
 
-        <div className="navbar-brand-text">
-          <h1>Singaji Educational Society</h1>
-          <p>Feedback Management System</p>
+        <div
+          className="navbar-brand"
+          onClick={toggleSidebar}
+          style={{ cursor: "pointer" }}
+          title="Toggle sidebar"
+        >
+          <img
+            src={ssecLogo}
+            alt="Singaji Educational Society"
+            className="navbar-logo"
+          />
+
+          <div className="navbar-brand-text">
+            <h1>Singaji Educational Society</h1>
+            <p>Feedback Management System</p>
+          </div>
         </div>
       </div>
 
