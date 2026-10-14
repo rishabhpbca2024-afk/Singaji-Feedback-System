@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FiAlertCircle } from "react-icons/fi";
+import { useNavigate, Link } from "react-router-dom";
+import { FiAlertCircle, FiInfo } from "react-icons/fi";
 import useAuth from "../hooks/useAuth.js";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -39,7 +39,11 @@ function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Invalid email or password");
+        if (data.message === "Invalid Gmail or password") {
+          setError("Invalid email or password. (Students: Please check your college email for your direct feedback link).");
+        } else {
+          setError(data.message || "Invalid email or password");
+        }
         return;
       }
 
@@ -103,7 +107,7 @@ function Login() {
           </div>
 
           <h2 className="login-title">Sign In</h2>
-          <p className="login-subtitle">Enter your credentials to continue</p>
+          <p className="login-subtitle">Faculty & Admin Portal • Sign in to continue</p>
 
           <form onSubmit={handleSubmit} className="login-form">
 
@@ -162,6 +166,20 @@ function Login() {
             </button>
 
           </form>
+
+          {/* ── Student Notice Banner ── */}
+          <div className="login-student-banner">
+            <div className="login-student-banner-header">
+              <span className="login-student-badge">Students</span>
+              <span>Looking for Lecture Feedback?</span>
+            </div>
+            <p className="login-student-banner-text">
+              Students do not need a login password. A secure, anonymous feedback link is sent directly to your registered college email when a lecture feedback session begins.
+            </p>
+            <Link to="/student/dashboard" className="login-student-link">
+              Student Feedback Portal & Token Guide →
+            </Link>
+          </div>
 
         </div>
       </div>

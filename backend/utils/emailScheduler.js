@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const Schedule = require("../models/Schedule");
 const { sendFeedbackLinkEmail } = require("./sendEmail");
-const SelectedStudents = require("../models/SeletedStudents");
+const SelectedStudents = require("../models/SelectedStudents");
 const { maskEmail } = require("./hashUtils");
 
 // ==========================================

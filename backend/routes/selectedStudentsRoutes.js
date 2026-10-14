@@ -6,7 +6,7 @@ const { protect,authorize } = require("../middleware/authMiddleware");
 const {
   saveSelectedStudents,
 getSelectedStudents,
-} = require("../controllers/seletedstudentsController");
+} = require("../controllers/selectedStudentsController");
 
 const router = express.Router();
 

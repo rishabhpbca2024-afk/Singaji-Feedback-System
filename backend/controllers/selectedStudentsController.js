@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const SelectedStudents = require("../models/SeletedStudents");
+const SelectedStudents = require("../models/SelectedStudents");
 const { safeErrorMessage } = require("../utils/errorHandler");
 
 const saveSelectedStudents = async (req, res) => {

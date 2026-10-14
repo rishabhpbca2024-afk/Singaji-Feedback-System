@@ -26,7 +26,6 @@ import ManageStudents from "../pages/ManageStudents.jsx";
 import ManageFaculty from "../pages/ManageFaculty.jsx";
 import ManageQuestions from "../pages/ManageQuestions.jsx";
 import Reports from "../pages/Reports.jsx";
-import ManageCourses from "../pages/ManageCourses.jsx";
 import ManageLectures from "../pages/ManageLectures.jsx";
 import AdminFeedback from "../pages/AdminFeedback.jsx";
 import AdminSettings from "../pages/AdminSettings.jsx";
@@ -179,11 +178,11 @@ function AppRoutes() {
           />
 
 
-          {/* Courses */}
+          {/* Courses (Redirect to Faculty & Subjects) */}
 
           <Route
             path="courses"
-            element={<ManageCourses />}
+            element={<Navigate to="/admin/faculty" replace />}
           />
 
 

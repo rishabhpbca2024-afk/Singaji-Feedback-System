@@ -19,7 +19,7 @@ const questionRoutes = require("./routes/questionRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const studentsRoutes = require("./routes/studentRoutes");
 const facultyRoutes = require("./routes/facultyRoutes");
-const selectedStudentsRoutes = require("./routes/seletedstudentsRoutes");
+const selectedStudentsRoutes = require("./routes/selectedStudentsRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
 
 // Feedback Email Scheduler

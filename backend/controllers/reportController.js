@@ -1,6 +1,6 @@
 const Feedback = require('../models/Feedback');
 const FeedbackSubmission = require('../models/FeedbackSubmission');
-const SelectedStudents = require('../models/SeletedStudents');
+const SelectedStudents = require('../models/SelectedStudents');
 const { hashStudentEmail } = require('../utils/hashUtils');
 
 // @desc    Get complete reports

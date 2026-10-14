@@ -401,6 +401,62 @@
 }
 
 /* ══════════════════════════════════════
+   STUDENT NOTICE BANNER
+══════════════════════════════════════ */
+.login-student-banner {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg-hover, rgba(249, 115, 22, 0.05));
+  border: 1px solid var(--border-color, rgba(249, 115, 22, 0.2));
+  border-radius: 12px;
+  text-align: left;
+}
+
+.login-student-banner-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin-bottom: 6px;
+}
+
+.login-student-badge {
+  background: var(--primary, #ea580c);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.login-student-banner-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-secondary, #64748b);
+  margin: 0 0 10px 0;
+}
+
+.login-student-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary, #ea580c);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.login-student-link:hover {
+  text-decoration: underline;
+  transform: translateX(2px);
+}
+
+/* ══════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════ */
 @media (max-width: 900px) {
