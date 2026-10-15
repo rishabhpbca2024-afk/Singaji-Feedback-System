@@ -4,7 +4,7 @@ const Student = require("../models/Students");
 const { safeErrorMessage } = require("../utils/errorHandler");
 
 const VALID_SECTIONS = ["ITEG", "MEG", "BEG", "B.Tech"];
-const VALID_LEVELS = ["1A", "1B", "1C", "2A", "2B", "2C"];
+const DEFAULT_LEVELS = ["1A", "1B", "1C", "2A", "2B", "2C"];
 
 /**
  * Normalizes section name variations
@@ -26,9 +26,7 @@ const normalizeSection = (val) => {
  */
 const normalizeLevel = (val) => {
   if (!val) return "";
-  const l = String(val).trim().toUpperCase();
-  if (VALID_LEVELS.includes(l)) return l;
-  return "";
+  return String(val).trim().toUpperCase();
 };
 
 // ==========================================
@@ -41,17 +39,24 @@ const getStudents = async (req, res) => {
       .sort({ section: 1, level: 1, studentId: 1 });
 
     const sections = {
-      ITEG: { "1A": [], "1B": [], "1C": [], "2A": [], "2B": [], "2C": [] },
-      MEG: { "1A": [], "1B": [], "1C": [], "2A": [], "2B": [], "2C": [] },
-      BEG: { "1A": [], "1B": [], "1C": [], "2A": [], "2B": [], "2C": [] },
-      "B.Tech": { "1A": [], "1B": [], "1C": [], "2A": [], "2B": [], "2C": [] },
+      ITEG: {},
+      MEG: {},
+      BEG: {},
+      "B.Tech": {},
     };
 
+    // Pre-populate default levels for all sections
+    Object.keys(sections).forEach((dept) => {
+      DEFAULT_LEVELS.forEach((lvl) => {
+        sections[dept][lvl] = [];
+      });
+    });
+
     students.forEach((student) => {
-      if (
-        sections[student.section] &&
-        sections[student.section][student.level]
-      ) {
+      if (sections[student.section]) {
+        if (!sections[student.section][student.level]) {
+          sections[student.section][student.level] = [];
+        }
         sections[student.section][student.level].push(student);
       }
     });
@@ -103,7 +108,7 @@ const addStudent = async (req, res) => {
     if (!normLevel) {
       return res.status(400).json({
         success: false,
-        message: `Class Level must be one of: ${VALID_LEVELS.join(", ")}`,
+        message: "Class Level is required",
       });
     }
 
@@ -274,7 +279,7 @@ const uploadStudentsExcel = async (req, res) => {
         skippedDetails.push({
           row: rowNum,
           name: rawName,
-          reason: `Invalid or missing Level (Must be 1A, 1B, 1C, 2A, 2B, or 2C)`,
+          reason: `Invalid or missing Level`,
         });
         return;
       }

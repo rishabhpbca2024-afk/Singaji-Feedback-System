@@ -19,10 +19,10 @@ const saveSelectedStudents = async (req, res) => {
     });
   }
 
-  if (students.length !== 10) {
+  if (students.length < 1) {
     return res.status(400).json({
       success: false,
-      message: "Exactly 10 students must be selected",
+      message: "At least 1 student must be selected",
     });
   }
 
@@ -91,69 +91,33 @@ const saveSelectedStudents = async (req, res) => {
     });
   }
 
-  // Use MongoDB session/transaction if available (M-3)
-  let session = null;
   try {
-    session = await mongoose.startSession();
-    session.startTransaction();
+    const existingSelected = await SelectedStudents.find({
+      department: String(department).trim(),
+      level: String(level).trim(),
+    }).select("gmail");
 
-    await SelectedStudents.deleteMany(
-      {
-        department: String(department).trim(),
-        level: String(level).trim(),
-      },
-      { session }
+    const existingGmails = new Set(
+      existingSelected.map((s) => s.gmail.toLowerCase().trim())
     );
 
-    const savedStudents = await SelectedStudents.insertMany(
-      sanitizedStudents,
-      { session }
+    const newToInsert = sanitizedStudents.filter(
+      (s) => !existingGmails.has(s.gmail.toLowerCase().trim())
     );
 
-    await session.commitTransaction();
-    session.endSession();
+    let savedStudents = [];
+    if (newToInsert.length > 0) {
+      savedStudents = await SelectedStudents.insertMany(newToInsert);
+    }
 
     return res.status(200).json({
       success: true,
-      message: "10 students selected successfully",
+      message: `${newToInsert.length} student(s) added to selection successfully`,
       data: savedStudents,
+      insertedCount: newToInsert.length,
+      alreadySelectedCount: sanitizedStudents.length - newToInsert.length,
     });
   } catch (error) {
-    if (session) {
-      try {
-        await session.abortTransaction();
-        session.endSession();
-      } catch {
-        // Fallback for standalone MongoDB environments that do not support transactions
-      }
-    }
-
-    // If transaction failed due to standalone mongo, execute standard sequence
-    if (error.message?.includes("Transaction") || error.message?.includes("replica set")) {
-      try {
-        await SelectedStudents.deleteMany({
-          department: String(department).trim(),
-          level: String(level).trim(),
-        });
-
-        const savedStudents = await SelectedStudents.insertMany(
-          sanitizedStudents
-        );
-
-        return res.status(200).json({
-          success: true,
-          message: "10 students selected successfully",
-          data: savedStudents,
-        });
-      } catch (fallbackErr) {
-        console.error("Fallback selected students error:", fallbackErr);
-        return res.status(500).json({
-          success: false,
-          message: safeErrorMessage(fallbackErr, "Failed to save selected students"),
-        });
-      }
-    }
-
     console.error("Error selecting students:", error);
 
     return res.status(500).json({
@@ -194,7 +158,41 @@ const getSelectedStudents = async (req, res) => {
   }
 };
 
+const removeSelectedStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid selected student ID is required",
+      });
+    }
+
+    const removed = await SelectedStudents.findByIdAndDelete(id);
+    if (!removed) {
+      return res.status(404).json({
+        success: false,
+        message: "Selected student record not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Student removed from selection successfully",
+      data: removed,
+    });
+  } catch (error) {
+    console.error("Error removing selected student:", error);
+    return res.status(500).json({
+      success: false,
+      message: safeErrorMessage(error, "Failed to remove selected student"),
+    });
+  }
+};
+
 module.exports = {
   saveSelectedStudents,
   getSelectedStudents,
+  removeSelectedStudent,
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import {
   FiArrowLeft,
   FiLoader,
@@ -16,6 +16,7 @@ import {
   FiFileText,
   FiAlertTriangle,
   FiUsers,
+  FiPlus,
 } from "react-icons/fi";
 
 import itegImage from "../assets/iteg.png";
@@ -25,6 +26,7 @@ import ssecImage from "../assets/ssec.png";
 
 import Modal from "../components/Modal.jsx";
 import CustomSelect from "../components/CustomSelect.jsx";
+import ConfirmModal from "../components/ConfirmModal.jsx";
 
 import "./ManageStudents.css";
 
@@ -53,7 +55,7 @@ const DEPARTMENTS = [
   },
 ];
 
-const LEVELS = ["1A", "1B", "1C", "2A", "2B", "2C"];
+const DEFAULT_LEVELS = ["1A", "1B", "1C", "2A", "2B", "2C"];
 
 function ManageStudents() {
   /* ========================================
@@ -102,6 +104,69 @@ function ManageStudents() {
   const fileInputRef = useRef(null);
 
   /* ========================================
+     CUSTOM LEVEL CREATION STATES
+  ======================================== */
+  const [customLevels, setCustomLevels] = useState([]);
+  const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
+  const [newLevelName, setNewLevelName] = useState("");
+
+  /* ========================================
+     POPUP DIALOG & DETAILS MODAL STATES
+  ======================================== */
+  const [popupConfig, setPopupConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    type: "info",
+    isLoading: false,
+    onConfirm: null,
+  });
+
+  const [studentDetailsModal, setStudentDetailsModal] = useState({
+    isOpen: false,
+    student: null,
+  });
+
+  const showAlert = (message, title = "Notice", type = "info") => {
+    setPopupConfig({
+      isOpen: true,
+      title,
+      message,
+      confirmText: "OK",
+      cancelText: null,
+      type,
+      isLoading: false,
+      onConfirm: null,
+    });
+  };
+
+  const showConfirm = ({
+    title,
+    message,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
+    type = "danger",
+    onConfirm,
+  }) => {
+    setPopupConfig({
+      isOpen: true,
+      title,
+      message,
+      confirmText,
+      cancelText,
+      type,
+      isLoading: false,
+      onConfirm,
+    });
+  };
+
+  const closePopup = () => {
+    setPopupConfig((prev) => ({ ...prev, isOpen: false, isLoading: false }));
+  };
+
+  /* ========================================
      FETCH STUDENTS
   ======================================== */
   const fetchStudents = async () => {
@@ -145,6 +210,79 @@ function ManageStudents() {
   };
 
   /* ========================================
+     DYNAMIC AVAILABLE LEVELS
+  ======================================== */
+  const availableLevels = useMemo(() => {
+    const levels = new Set(DEFAULT_LEVELS);
+    if (selectedDepartment && studentData[selectedDepartment]) {
+      Object.keys(studentData[selectedDepartment]).forEach((lvl) => levels.add(lvl));
+    } else {
+      Object.values(studentData).forEach((deptObj) => {
+        if (deptObj && typeof deptObj === "object") {
+          Object.keys(deptObj).forEach((lvl) => levels.add(lvl));
+        }
+      });
+    }
+    customLevels.forEach((lvl) => levels.add(lvl));
+    return Array.from(levels);
+  }, [studentData, selectedDepartment, customLevels]);
+
+  const handleCreateLevel = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const trimmed = newLevelName.trim().toUpperCase();
+    if (!trimmed) return;
+
+    if (availableLevels.includes(trimmed)) {
+      showAlert(
+        `Level "${trimmed}" already exists in ${selectedDepartment}. Please choose a different name.`,
+        "Level Already Exists",
+        "warning"
+      );
+      return;
+    }
+
+    setCustomLevels((prev) => [...prev, trimmed]);
+    setIsCreateLevelOpen(false);
+    setNewLevelName("");
+    handleLevelClick(trimmed);
+  };
+
+  /* ========================================
+     FETCH SAVED SELECTED STUDENTS
+  ======================================== */
+  const fetchSavedStudents = async (
+    dept = selectedDepartment,
+    lvl = selectedLevel
+  ) => {
+    if (!dept || !lvl) return;
+    setLoadingSelectedStudents(true);
+    try {
+      const response = await fetch(
+        `${API_URL}/api/selected-students?department=${encodeURIComponent(
+          dept
+        )}&level=${encodeURIComponent(lvl)}`,
+        { credentials: "include" }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setSavedStudents(data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching selected students:", error);
+    } finally {
+      setLoadingSelectedStudents(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDepartment && selectedLevel) {
+      fetchSavedStudents(selectedDepartment, selectedLevel);
+    } else {
+      setSavedStudents([]);
+    }
+  }, [selectedDepartment, selectedLevel]);
+
+  /* ========================================
      CURRENT STUDENT LIST & SEARCH
   ======================================== */
   const currentStudentsList =
@@ -161,8 +299,22 @@ function ManageStudents() {
         )
       : [];
 
+  const savedStudentEmails = useMemo(() => {
+    return new Set(
+      savedStudents
+        .map((s) => (s.gmail || "").toLowerCase().trim())
+        .filter(Boolean)
+    );
+  }, [savedStudents]);
+
   const filteredStudents = currentStudentsList.filter((student) => {
+    // 1. Hide if currently checked in this session
     if (selectedStudents.includes(student.id)) return false;
+    // 2. Hide if already selected and saved in database (until removed)
+    if (savedStudentEmails.has((student.email || "").toLowerCase().trim())) {
+      return false;
+    }
+
     const search = searchTerm.toLowerCase().trim();
     if (!search) return true;
     return (
@@ -182,7 +334,6 @@ function ManageStudents() {
     setSearchTerm("");
     setSaveSuccessMessage("");
     setShowSelectedStudents(false);
-    setSavedStudents([]);
   };
 
   const handleLevelClick = (levelName) => {
@@ -191,7 +342,6 @@ function ManageStudents() {
     setSearchTerm("");
     setSaveSuccessMessage("");
     setShowSelectedStudents(false);
-    setSavedStudents([]);
   };
 
   const handleBackToDepartments = () => {
@@ -201,7 +351,6 @@ function ManageStudents() {
     setSearchTerm("");
     setSaveSuccessMessage("");
     setShowSelectedStudents(false);
-    setSavedStudents([]);
   };
 
   const handleBackToLevels = () => {
@@ -210,7 +359,6 @@ function ManageStudents() {
     setSearchTerm("");
     setSaveSuccessMessage("");
     setShowSelectedStudents(false);
-    setSavedStudents([]);
   };
 
   /* ========================================
@@ -222,17 +370,17 @@ function ManageStudents() {
       if (currentSelected.includes(studentId)) {
         return currentSelected.filter((id) => id !== studentId);
       }
-      if (currentSelected.length >= 10) {
-        alert("Maximum 10 students can be selected for feedback quota.");
-        return currentSelected;
-      }
       return [...currentSelected, studentId];
     });
   };
 
   const handleSave = async () => {
-    if (selectedStudents.length !== 10) {
-      alert("Please select exactly 10 students before saving.");
+    if (selectedStudents.length < 1) {
+      showAlert(
+        "Please select at least 1 student before saving selection.",
+        "Selection Required",
+        "warning"
+      );
       return;
     }
 
@@ -260,23 +408,57 @@ function ManageStudents() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.message || "Failed to save students.");
+        showAlert(data.message || "Failed to save students.", "Save Failed", "danger");
         return;
       }
 
       if (data.success) {
         setSaveSuccessMessage(
-          `Selection saved successfully! 10 students assigned for ${selectedDepartment} — Level ${selectedLevel}.`
+          `Selection saved successfully! ${selectedStudentData.length} student${selectedStudentData.length > 1 ? "s" : ""} assigned for ${selectedDepartment} — Level ${selectedLevel}.`
         );
         setSelectedStudents([]);
+        await fetchSavedStudents(selectedDepartment, selectedLevel);
         setTimeout(() => {
           setSaveSuccessMessage("");
         }, 3500);
       }
     } catch (error) {
       console.error("Error saving selected students:", error);
-      alert("Something went wrong while saving students.");
+      showAlert("Something went wrong while saving students.", "Save Error", "danger");
     }
+  };
+
+  const handleRemoveSavedStudent = (mongoId, studentName = "") => {
+    showConfirm({
+      title: "Remove from Selection?",
+      message: `Are you sure you want to remove ${
+        studentName ? `"${studentName}"` : "this student"
+      } from feedback selection? They will become available to select again.`,
+      confirmText: "Yes, Remove",
+      cancelText: "Cancel",
+      type: "warning",
+      onConfirm: async () => {
+        setPopupConfig((prev) => ({ ...prev, isLoading: true }));
+        try {
+          const response = await fetch(`${API_URL}/api/selected-students/${mongoId}`, {
+            method: "DELETE",
+            credentials: "include",
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            closePopup();
+            showAlert(data.message || "Failed to remove student", "Removal Failed", "danger");
+            return;
+          }
+          setSavedStudents((prev) => prev.filter((s) => s._id !== mongoId));
+          closePopup();
+        } catch (error) {
+          console.error("Error removing student:", error);
+          closePopup();
+          showAlert("Something went wrong while removing student.", "Removal Error", "danger");
+        }
+      },
+    });
   };
 
   const handleViewSelectedStudents = async () => {
@@ -284,35 +466,11 @@ function ManageStudents() {
 
     if (showSelectedStudents) {
       setShowSelectedStudents(false);
-      setSavedStudents([]);
       return;
     }
 
-    setLoadingSelectedStudents(true);
-    try {
-      const response = await fetch(
-        `${API_URL}/api/selected-students?department=${encodeURIComponent(
-          selectedDepartment
-        )}&level=${encodeURIComponent(selectedLevel)}`,
-        { credentials: "include" }
-      );
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Failed to fetch selected students.");
-        return;
-      }
-
-      if (data.success) {
-        setSavedStudents(data.data || []);
-        setShowSelectedStudents(true);
-      }
-    } catch (error) {
-      console.error("Error fetching selected students:", error);
-      alert("Something went wrong while fetching selected students.");
-    } finally {
-      setLoadingSelectedStudents(false);
-    }
+    await fetchSavedStudents(selectedDepartment, selectedLevel);
+    setShowSelectedStudents(true);
   };
 
   /* ========================================
@@ -364,7 +522,7 @@ function ManageStudents() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
-      alert("Error downloading template: " + err.message);
+      showAlert("Error downloading template: " + err.message, "Download Failed", "danger");
     }
   };
 
@@ -374,7 +532,7 @@ function ManageStudents() {
   const handleAddStudentSubmit = async (e) => {
     e.preventDefault();
     if (!newStudent.name.trim() || !newStudent.gmail.trim()) {
-      alert("Please provide at least a student name and email.");
+      showAlert("Please provide at least a student name and email.", "Missing Information", "warning");
       return;
     }
 
@@ -389,17 +547,21 @@ function ManageStudents() {
 
       const data = await response.json();
       if (!response.ok) {
-        alert(data.message || "Failed to add student.");
+        showAlert(data.message || "Failed to add student.", "Registration Failed", "danger");
         setIsSubmittingStudent(false);
         return;
       }
 
-      alert(data.message || "Student added successfully!");
       setIsAddModalOpen(false);
       await fetchStudents();
+      showAlert(
+        `Student "${newStudent.name}" has been successfully added to ${newStudent.section} (${newStudent.level}).`,
+        "Student Added",
+        "success"
+      );
     } catch (err) {
       console.error(err);
-      alert("Something went wrong while adding student.");
+      showAlert("Something went wrong while adding student.", "Error", "danger");
     } finally {
       setIsSubmittingStudent(false);
     }
@@ -419,7 +581,7 @@ function ManageStudents() {
   const handleExcelUploadSubmit = async (e) => {
     e.preventDefault();
     if (!excelFile) {
-      alert("Please choose an Excel or CSV file to upload.");
+      showAlert("Please choose an Excel or CSV file to upload.", "No File Selected", "warning");
       return;
     }
 
@@ -440,16 +602,21 @@ function ManageStudents() {
 
       const data = await response.json();
       if (!response.ok) {
-        alert(data.message || "Failed to import students from file.");
+        showAlert(data.message || "Failed to import students from file.", "Upload Failed", "danger");
         setIsUploadingExcel(false);
         return;
       }
 
       setUploadResult(data);
       await fetchStudents();
+      showAlert(
+        `Import completed! ${data.insertedCount || 0} students added successfully.`,
+        "Import Successful",
+        "success"
+      );
     } catch (err) {
       console.error("Excel upload error:", err);
-      alert("Something went wrong during file upload.");
+      showAlert("Something went wrong during file upload.", "Upload Error", "danger");
     } finally {
       setIsUploadingExcel(false);
     }
@@ -458,37 +625,43 @@ function ManageStudents() {
   /* ========================================
      DELETE STUDENT HANDLER
   ======================================== */
-  const handleDeleteStudent = async (studentId, studentName) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete student "${studentName}" (${studentId})?`
-      )
-    ) {
-      return;
-    }
+  const handleDeleteStudent = (studentId, studentName) => {
+    showConfirm({
+      title: "Delete Student?",
+      message: `Are you sure you want to permanently delete student "${studentName}" (${studentId})? This action cannot be undone.`,
+      confirmText: "Yes, Delete",
+      cancelText: "Cancel",
+      type: "danger",
+      onConfirm: async () => {
+        setPopupConfig((prev) => ({ ...prev, isLoading: true }));
+        try {
+          const response = await fetch(
+            `${API_URL}/api/students/${encodeURIComponent(studentId)}`,
+            {
+              method: "DELETE",
+              credentials: "include",
+            }
+          );
+          const data = await response.json();
 
-    try {
-      const response = await fetch(
-        `${API_URL}/api/students/${encodeURIComponent(studentId)}`,
-        {
-          method: "DELETE",
-          credentials: "include",
+          if (!response.ok) {
+            closePopup();
+            showAlert(data.message || "Failed to delete student.", "Delete Failed", "danger");
+            return;
+          }
+
+          // Remove from selected list if present
+          setSelectedStudents((prev) => prev.filter((id) => id !== studentId));
+          await fetchStudents();
+          closePopup();
+          showAlert(`Student "${studentName}" (${studentId}) deleted successfully.`, "Student Deleted", "success");
+        } catch (err) {
+          console.error("Delete student error:", err);
+          closePopup();
+          showAlert("Failed to delete student.", "Error", "danger");
         }
-      );
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Failed to delete student.");
-        return;
-      }
-
-      // Remove from selected list if present
-      setSelectedStudents((prev) => prev.filter((id) => id !== studentId));
-      await fetchStudents();
-    } catch (err) {
-      console.error("Delete student error:", err);
-      alert("Failed to delete student.");
-    }
+      },
+    });
   };
 
   /* ========================================
@@ -588,6 +761,15 @@ function ManageStudents() {
             <div className="students-action-group">
               <button
                 type="button"
+                className="btn-create-level"
+                onClick={() => setIsCreateLevelOpen(true)}
+              >
+                <FiPlus size={16} />
+                <span>+ Create Level</span>
+              </button>
+
+              <button
+                type="button"
                 className="btn-add-primary"
                 onClick={() => openAddStudentModal(selectedDepartment)}
               >
@@ -616,7 +798,7 @@ function ManageStudents() {
           </div>
 
           <div className="level-grid">
-            {LEVELS.map((level) => {
+            {availableLevels.map((level) => {
               const count = getLevelCount(selectedDepartment, level);
               return (
                 <div
@@ -627,11 +809,25 @@ function ManageStudents() {
                   <span className="level-badge">Level</span>
                   <h2>{level}</h2>
                   <span className="level-student-badge">
+                    <FiUsers size={12} />
                     {count} Student{count === 1 ? "" : "s"}
                   </span>
                 </div>
               );
             })}
+
+            <div
+              className="level-card level-card-create"
+              onClick={() => setIsCreateLevelOpen(true)}
+            >
+              <div className="create-level-card-inner">
+                <div className="create-level-icon-circle">
+                  <FiPlus size={22} />
+                </div>
+                <h3>+ New Level</h3>
+                <p>Create custom class</p>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -653,7 +849,7 @@ function ManageStudents() {
                 {selectedDepartment} — Level {selectedLevel}
               </h1>
               <p>
-                Manage students & select exactly 10 students for feedback quota.
+                Manage students & select students for feedback quota.
               </p>
             </div>
 
@@ -683,12 +879,12 @@ function ManageStudents() {
               {/* Selection counter */}
               <div
                 className={`selection-counter-badge ${
-                  selectedStudents.length === 10 ? "count-complete" : ""
+                  selectedStudents.length > 0 ? "count-complete" : ""
                 }`}
               >
                 <span className="counter-dot"></span>
                 <span>
-                  Selected: <strong>{selectedStudents.length} / 10</strong>
+                  Selected: <strong>{selectedStudents.length}</strong>
                 </span>
               </div>
 
@@ -728,7 +924,7 @@ function ManageStudents() {
                       gap: "6px",
                     }}
                   >
-                    <FiEye /> View Selected (10)
+                    <FiEye /> View Selected {savedStudents.length > 0 ? `(${savedStudents.length})` : ""}
                   </span>
                 )}
               </button>
@@ -737,7 +933,7 @@ function ManageStudents() {
               <button
                 className="save-button"
                 onClick={handleSave}
-                disabled={selectedStudents.length !== 10}
+                disabled={selectedStudents.length < 1}
               >
                 <FiSave style={{ marginRight: "6px", verticalAlign: "-2px" }} />
                 Save Selection
@@ -775,7 +971,7 @@ function ManageStudents() {
                   </p>
                 </div>
                 <span className="selected-total">
-                  {savedStudents.length} / 10
+                  {savedStudents.length} Selected
                 </span>
               </div>
 
@@ -788,6 +984,7 @@ function ManageStudents() {
                         <th>Student Name</th>
                         <th>Email</th>
                         <th>Status</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -809,6 +1006,17 @@ function ManageStudents() {
                             <span className="status-pill pill-active">
                               Selected
                             </span>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn-remove-saved"
+                              onClick={() => handleRemoveSavedStudent(student._id, student.name)}
+                              title="Remove from selection"
+                            >
+                              <FiTrash2 size={13} />
+                              <span>Remove</span>
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -835,10 +1043,10 @@ function ManageStudents() {
                 </div>
                 <span
                   className={`selected-mini-count ${
-                    selectedStudents.length === 10 ? "count-full" : ""
+                    selectedStudents.length > 0 ? "count-full" : ""
                   }`}
                 >
-                  {selectedStudents.length} / 10
+                  {selectedStudents.length} Selected
                 </span>
               </div>
 
@@ -951,17 +1159,34 @@ function ManageStudents() {
                           <span className="dept-badge">{selectedLevel}</span>
                         </td>
                         <td onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            className="btn-table-delete"
-                            onClick={() =>
-                              handleDeleteStudent(student.id, student.name)
-                            }
-                            title="Delete Student"
-                          >
-                            <FiTrash2 size={13} />
-                            <span>Delete</span>
-                          </button>
+                          <div className="table-actions-cell">
+                            <button
+                              type="button"
+                              className="btn-table-view"
+                              onClick={() =>
+                                setStudentDetailsModal({
+                                  isOpen: true,
+                                  student,
+                                })
+                              }
+                              title="View Student Details"
+                            >
+                              <FiEye size={13} />
+                              <span>View</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn-table-delete"
+                              onClick={() =>
+                                handleDeleteStudent(student.id, student.name)
+                              }
+                              title="Delete Student"
+                            >
+                              <FiTrash2 size={13} />
+                              <span>Delete</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -971,6 +1196,8 @@ function ManageStudents() {
                     <td colSpan={6} className="no-data-cell">
                       {searchTerm
                         ? "No students found matching your search."
+                        : currentStudentsList.length > 0 && savedStudents.length > 0
+                        ? `All registered students from ${selectedDepartment} (${selectedLevel}) are currently selected for feedback. You can view or remove them via "View Selected".`
                         : `No registered students found in ${selectedDepartment} (${selectedLevel}). Click "+ Add Student" or "Import Excel" above to add students.`}
                     </td>
                   </tr>
@@ -982,14 +1209,16 @@ function ManageStudents() {
           {/* BOTTOM SAVE BAR */}
           <div className="save-section">
             <p>
-              Feedback quota: Exactly 10 students required. Selected:{" "}
-              <strong>{selectedStudents.length} / 10</strong>
+              Selected for feedback:{" "}
+              <strong>
+                {selectedStudents.length} student{selectedStudents.length === 1 ? "" : "s"}
+              </strong>
             </p>
 
             <button
               className="save-button"
               onClick={handleSave}
-              disabled={selectedStudents.length !== 10}
+              disabled={selectedStudents.length < 1}
             >
               <FiSave style={{ marginRight: "6px", verticalAlign: "-2px" }} />
               Save Selection
@@ -1064,7 +1293,7 @@ function ManageStudents() {
               onChange={(e) =>
                 setNewStudent({ ...newStudent, level: e.target.value })
               }
-              options={LEVELS}
+              options={availableLevels}
             />
           </div>
 
@@ -1190,7 +1419,7 @@ function ManageStudents() {
               <CustomSelect
                 value={excelDefaultLevel}
                 onChange={(e) => setExcelDefaultLevel(e.target.value)}
-                options={LEVELS}
+                options={availableLevels}
               />
             </div>
 
@@ -1247,6 +1476,208 @@ function ManageStudents() {
           </form>
         </div>
       </Modal>
+
+      {/* ──────────────────────────────────────────
+          MODAL 3: CREATE NEW LEVEL / CLASS
+      ────────────────────────────────────────── */}
+      <Modal
+        isOpen={isCreateLevelOpen}
+        onClose={() => {
+          setIsCreateLevelOpen(false);
+          setNewLevelName("");
+        }}
+        title={`Create New Level — ${selectedDepartment || "Department"}`}
+      >
+        <div className="modal-form-wrap">
+          <form onSubmit={handleCreateLevel}>
+            <div className="modal-form-group">
+              <label>Department</label>
+              <input
+                type="text"
+                value={selectedDepartment || ""}
+                disabled
+                style={{
+                  background: "#f1f5f9",
+                  cursor: "not-allowed",
+                  color: "#64748b",
+                  fontWeight: 600,
+                }}
+              />
+            </div>
+
+            <div className="modal-form-group">
+              <label>New Level / Class Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. 1D, 2D, 3A, 3B, Final Year"
+                value={newLevelName}
+                onChange={(e) => setNewLevelName(e.target.value)}
+                autoFocus
+              />
+              <span
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  color: "var(--text-secondary, #64748b)",
+                  marginTop: "6px",
+                }}
+              >
+                Quick suggestions:
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "6px",
+                  flexWrap: "wrap",
+                  marginTop: "6px",
+                }}
+              >
+                {["1D", "2D", "3A", "3B", "3C", "4A", "4B"].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    className="preset-chip"
+                    onClick={() => setNewLevelName(preset)}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="modal-actions" style={{ marginTop: "24px" }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setIsCreateLevelOpen(false);
+                  setNewLevelName("");
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={!newLevelName.trim()}
+              >
+                <FiPlus size={16} style={{ marginRight: "4px" }} />
+                Create & Open Level
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      {/* ──────────────────────────────────────────
+          MODAL 4: STUDENT DETAILS POPUP
+      ────────────────────────────────────────── */}
+      <Modal
+        isOpen={studentDetailsModal.isOpen}
+        onClose={() => setStudentDetailsModal({ isOpen: false, student: null })}
+        title="Student Details"
+      >
+        {studentDetailsModal.student && (
+          <div className="student-details-popup-body">
+            <div className="student-details-avatar-section">
+              <div className="student-details-avatar">
+                {studentDetailsModal.student.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="student-details-name-wrap">
+                <h3>{studentDetailsModal.student.name}</h3>
+                <span className="student-details-id-badge">
+                  {studentDetailsModal.student.id}
+                </span>
+              </div>
+            </div>
+
+            <div className="student-details-grid">
+              <div className="student-detail-item">
+                <span className="detail-label">Email Address</span>
+                <span className="detail-value">
+                  {studentDetailsModal.student.email}
+                </span>
+              </div>
+              <div className="student-detail-item">
+                <span className="detail-label">Department / Section</span>
+                <span className="detail-value">
+                  {studentDetailsModal.student.section || selectedDepartment}
+                </span>
+              </div>
+              <div className="student-detail-item">
+                <span className="detail-label">Class Level</span>
+                <span className="detail-value">
+                  {studentDetailsModal.student.level || selectedLevel}
+                </span>
+              </div>
+              <div className="student-detail-item">
+                <span className="detail-label">Feedback Status</span>
+                <span className="detail-value">
+                  {savedStudentEmails.has(
+                    (studentDetailsModal.student.email || "").toLowerCase().trim()
+                  ) ? (
+                    <span className="status-pill pill-active">
+                      Selected for Feedback
+                    </span>
+                  ) : selectedStudents.includes(studentDetailsModal.student.id) ? (
+                    <span
+                      className="status-pill pill-active"
+                      style={{ background: "#ffedd5", color: "#ea580c" }}
+                    >
+                      Chosen in Current Session
+                    </span>
+                  ) : (
+                    <span className="status-pill pill-inactive">
+                      Available to Select
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div className="modal-actions" style={{ marginTop: "24px" }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() =>
+                  setStudentDetailsModal({ isOpen: false, student: null })
+                }
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="btn-danger-outline"
+                onClick={() => {
+                  const s = studentDetailsModal.student;
+                  setStudentDetailsModal({ isOpen: false, student: null });
+                  handleDeleteStudent(s.id, s.name);
+                }}
+              >
+                <FiTrash2 size={14} style={{ marginRight: "6px" }} />
+                Delete Student
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ──────────────────────────────────────────
+          REUSABLE CONFIRM & ALERT MODAL POPUP
+      ────────────────────────────────────────── */}
+      <ConfirmModal
+        isOpen={popupConfig.isOpen}
+        onClose={closePopup}
+        onConfirm={popupConfig.onConfirm}
+        title={popupConfig.title}
+        message={popupConfig.message}
+        confirmText={popupConfig.confirmText}
+        cancelText={popupConfig.cancelText}
+        type={popupConfig.type}
+        isLoading={popupConfig.isLoading}
+      />
     </div>
   );
 }
