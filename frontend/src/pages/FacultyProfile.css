@@ -436,3 +436,66 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .faculty-profile-page {
+    padding: 16px 12px;
+  }
+
+  .profile-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .profile-page-header h1 {
+    font-size: 22px;
+  }
+
+  .btn-edit-profile,
+  .btn-change-password-header {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .form-group-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .profile-details-card,
+  .profile-security-card,
+  .profile-sidebar-card {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .profile-warning-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+
+  .btn-banner-action {
+    width: 100%;
+    text-align: center;
+  }
+
+  .security-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-security-change {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

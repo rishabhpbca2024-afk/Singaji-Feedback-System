@@ -62,11 +62,20 @@ const Icons = {
 };
 
 function Sidebar() {
-  const { sidebarOpen } = useSidebar();
+  const { sidebarOpen, closeSidebar } = useSidebar();
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  const handleLinkClick = () => {
+    if (window.innerWidth <= 768) {
+      closeSidebar();
+    }
+  };
+
   const handleLogout = () => {
+    if (window.innerWidth <= 768) {
+      closeSidebar();
+    }
     logout();
     navigate("/login", { replace: true });
   };
@@ -91,6 +100,7 @@ function Sidebar() {
             className={({ isActive }) =>
               `sidebar-link${isActive ? " active" : ""}`
             }
+            onClick={handleLinkClick}
             title={!sidebarOpen ? item.label : undefined}
           >
             <span className="sidebar-icon">{item.icon}</span>

@@ -357,3 +357,117 @@
   border: 1px solid #e2e8f0;
   display: inline-block;
 }
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 768px) {
+  .student-header {
+    padding: 12px 20px;
+  }
+
+  .feedback-form-main {
+    margin: 20px auto;
+    padding: 0 14px;
+  }
+
+  .feedback-card-wrapper {
+    padding: 26px 20px;
+    border-radius: 20px;
+  }
+
+  .lecture-meta-card {
+    padding: 18px;
+    margin-bottom: 22px;
+  }
+
+  .form-q-block {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .student-header {
+    padding: 10px 14px;
+  }
+
+  .student-logo {
+    height: 38px;
+  }
+
+  .header-brand h1 {
+    font-size: 16px;
+  }
+
+  .header-brand p {
+    font-size: 11px;
+  }
+
+  .feedback-card-wrapper {
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .lecture-meta-card {
+    padding: 14px;
+  }
+
+  .meta-row {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .meta-val {
+    word-break: break-word;
+  }
+
+  .form-q-block {
+    padding: 16px 14px;
+  }
+
+  .q-text {
+    font-size: 14px;
+  }
+
+  .star-rating-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .star-option-btn {
+    font-size: 28px;
+    padding: 0 2px;
+  }
+
+  .star-rating-label {
+    margin-left: 0;
+    margin-top: 6px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .submit-feedback-btn {
+    padding: 13px;
+    font-size: 15px;
+  }
+
+  .submission-success-card {
+    padding: 28px 16px;
+    border-radius: 18px;
+  }
+
+  .success-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .success-title {
+    font-size: 20px;
+  }
+
+  .success-desc {
+    font-size: 13px;
+  }
+}
+

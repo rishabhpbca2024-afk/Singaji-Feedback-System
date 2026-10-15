@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiKey } from "react-icons/fi";
+import { FiKey, FiMenu, FiX } from "react-icons/fi";
 import useAuth from "../hooks/useAuth.js";
 import { useSidebar } from "../context/SidebarContext.jsx";
 import AdminChangePasswordModal from "./AdminChangePasswordModal.jsx";
@@ -10,7 +10,7 @@ import ssecLogo from "../assets/rename.png";
 function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, sidebarOpen } = useSidebar();
   const [isAdminPasswordModalOpen, setIsAdminPasswordModalOpen] = useState(false);
 
   const handleLogout = () => {
@@ -20,24 +20,37 @@ function Navbar() {
 
   return (
     <header className="navbar">
-      {/* Left Side — Logo toggles sidebar */}
-      <div
-        className="navbar-brand"
-        onClick={toggleSidebar}
-        style={{ cursor: "pointer" }}
-        title="Toggle sidebar"
-      >
-        <img
-          src={ssecLogo}
-          alt="Singaji Educational Society"
-          className="navbar-logo"
-        />
+      {/* Left Side — Mobile Toggle + Logo */}
+      <div className="navbar-left">
+        <button
+          type="button"
+          className="navbar-mobile-toggle"
+          onClick={toggleSidebar}
+          aria-label={sidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+          title="Toggle navigation"
+        >
+          {sidebarOpen ? <FiX size={20} /> : <FiMenu size={20} />}
+        </button>
 
-        <div className="navbar-brand-text">
-          <h1>Singaji Educational Society</h1>
-          <p>Feedback Management System</p>
+        <div
+          className="navbar-brand"
+          onClick={toggleSidebar}
+          style={{ cursor: "pointer" }}
+          title="Toggle sidebar"
+        >
+          <img
+            src={ssecLogo}
+            alt="Singaji Educational Society"
+            className="navbar-logo"
+          />
+
+          <div className="navbar-brand-text">
+            <h1>Singaji Educational Society</h1>
+            <p>Feedback Management System</p>
+          </div>
         </div>
       </div>
+
 
       {/* Right Side */}
       <div className="navbar-right">

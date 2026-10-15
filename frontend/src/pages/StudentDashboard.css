@@ -141,3 +141,67 @@
     box-shadow: none;
 }
 
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 768px) {
+    .student-header {
+        height: auto;
+        padding: 12px 18px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .student-main {
+        margin: 24px auto;
+        padding: 0 16px;
+    }
+
+    .student-card-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .welcome-banner {
+        padding: 20px 18px;
+    }
+
+    .welcome-banner h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-header {
+        padding: 10px 14px;
+    }
+
+    .student-logo {
+        width: 38px;
+        height: 38px;
+    }
+
+    .header-brand h1 {
+        font-size: 15px;
+    }
+
+    .header-brand p {
+        font-size: 11px;
+    }
+
+    .student-logout-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+    }
+
+    .student-card {
+        padding: 20px 16px;
+    }
+
+    .student-card h3 {
+        font-size: 18px;
+    }
+}
+
+

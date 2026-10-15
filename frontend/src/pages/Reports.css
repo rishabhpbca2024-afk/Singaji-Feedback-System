@@ -342,10 +342,40 @@
     .reports-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 14px;
+    }
+
+    .reports-header h1 {
+        font-size: 24px;
+    }
+
+    .reports-filters {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
         gap: 12px;
+    }
+
+    .report-filter-item {
+        width: 100%;
+    }
+
+    .reports-select,
+    .reports-date-input {
+        width: 100%;
+        min-width: 100%;
     }
 
     .dept-perf-grid {
         grid-template-columns: 1fr;
     }
+
+    .reports-section-card {
+        padding: 18px 16px;
+    }
+
+    .kpi-report-card {
+        padding: 18px 16px;
+    }
 }
+

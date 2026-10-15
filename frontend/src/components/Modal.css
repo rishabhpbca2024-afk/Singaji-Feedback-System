@@ -224,11 +224,38 @@
 }
 
 @media (max-width: 520px) {
+  .modal-overlay {
+    padding: 16px 10px;
+  }
+
   .modal-content {
     max-width: 100%;
-    border-radius: 18px;
+    border-radius: 16px;
+    max-height: 92vh;
   }
-  .modal-header, .modal-body {
-    padding: 18px 20px;
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 17px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+    padding-top: 14px;
+    margin-top: 16px;
+  }
+
+  .modal-actions button {
+    width: 100%;
+    justify-content: center;
   }
 }
+

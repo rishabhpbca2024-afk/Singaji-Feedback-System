@@ -378,9 +378,11 @@
 
 .selected-students-table {
   width: 100%;
+  min-width: 550px;
   border-collapse: collapse;
   text-align: left;
 }
+
 
 .selected-students-table th {
   background: #f8fafc;
@@ -603,15 +605,18 @@
   border-radius: 18px;
   border: 1px solid var(--border-light, #e2e8f0);
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 28px;
 }
 
 .data-table {
   width: 100%;
+  min-width: 650px;
   border-collapse: collapse;
   text-align: left;
 }
+
 
 .data-table th {
   background: #f8fafc;
@@ -794,12 +799,35 @@
 }
 
 @media (max-width: 768px) {
+  .manage-students h1 {
+    font-size: 24px;
+  }
+
+  .students-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .students-action-group {
+    width: 100%;
+  }
+
+  .btn-add-primary,
+  .btn-import-excel,
+  .btn-download-template {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
   .action-bar-top {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .top-controls-group {
+    width: 100%;
     justify-content: flex-start;
   }
 
@@ -809,20 +837,66 @@
     text-align: center;
   }
 
+  .save-button {
+    width: 100%;
+  }
+
   .department-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 
   .level-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 }
 
 @media (max-width: 480px) {
   .department-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .level-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .students-action-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-add-primary,
+  .btn-import-excel,
+  .btn-download-template {
+    width: 100%;
+  }
+
+  .top-controls-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selection-counter-badge,
+  .view-selected-btn {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .selected-students-container {
+    padding: 16px 12px;
+  }
+
+  .selected-students-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
+
 
 /* ========================================
    STUDENT ACTION BAR & HEADER BUTTONS

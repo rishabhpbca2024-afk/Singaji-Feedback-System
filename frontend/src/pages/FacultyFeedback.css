@@ -14,7 +14,9 @@
     align-items: center;
     gap: 12px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
+
 
 .feedback-student-info span {
     color: #374151;

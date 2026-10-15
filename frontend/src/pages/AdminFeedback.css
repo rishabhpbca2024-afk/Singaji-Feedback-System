@@ -357,20 +357,45 @@ input[type="date"].af-select {
 @media (max-width: 650px) {
   .af-header {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .af-header h1 {
+    font-size: 24px;
+  }
+
+  .af-alert-pill {
+    align-self: flex-start;
   }
 
   .af-summary-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .af-filters {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .af-search {
-    min-width: unset;
+  .af-search,
+  .af-select {
+    width: 100%;
+    min-width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .af-header h1 {
+    font-size: 20px;
+  }
+
+  .af-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 /* ========================================
    VIEW BUTTON

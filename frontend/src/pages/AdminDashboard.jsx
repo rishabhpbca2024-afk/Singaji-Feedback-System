@@ -210,7 +210,7 @@ useEffect(() => {
           <p>Overview of today's academic and feedback activity</p>
         </div>
 
-        <button
+        {/* <button
           type="button"
           className="btn-admin-change-pwd"
           onClick={() => setIsPasswordModalOpen(true)}
@@ -218,7 +218,7 @@ useEffect(() => {
         >
           <FiKey size={15} />
           <span>Change Password</span>
-        </button>
+        </button> */}
       </div>
 
 

@@ -193,20 +193,47 @@
 }
 
 @media (max-width: 768px) {
+    .faculty-page-header h1 {
+        font-size: 24px;
+    }
+
+    .timetable-wrapper {
+        padding: 16px 12px;
+        border-radius: 12px;
+    }
+
     .timetable-header-top {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 14px;
     }
     
     .btn-share-schedule {
         width: 100%;
         justify-content: center;
     }
+
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 @media (max-width: 480px) {
     .faculty-summary-grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .faculty-stat-card {
+        padding: 16px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
+
+    .institute-info h2 {
+        font-size: 16px;
     }
 }
+

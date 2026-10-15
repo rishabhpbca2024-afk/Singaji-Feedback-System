@@ -291,3 +291,41 @@
   margin: 0 0 24px 0;
   line-height: 1.5;
 }
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 560px) {
+  .activate-navbar {
+    padding: 0 16px;
+    height: 60px;
+  }
+
+  .activate-navbar-logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .activate-navbar-name {
+    font-size: 14px;
+  }
+
+  .activate-navbar-full {
+    display: none;
+  }
+
+  .activate-content {
+    padding: 24px 14px 40px;
+  }
+
+  .activate-card {
+    padding: 24px 16px;
+    border-radius: 14px;
+  }
+
+  .activate-title {
+    font-size: 19px;
+  }
+}
+

@@ -204,3 +204,72 @@
 .btn-banner-change:hover {
   background: #b45309;
 }
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 768px) {
+  .faculty-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .faculty-page-header h1 {
+    font-size: 24px;
+  }
+
+  .faculty-page-header > div:last-child {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .btn-change-password-dash,
+  .btn-add-schedule,
+  .btn-share-schedule {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .faculty-date-display {
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
+  }
+
+  .schedule-section {
+    padding: 16px 12px;
+    border-radius: 16px;
+  }
+
+  .faculty-must-change-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .btn-banner-change {
+    width: 100%;
+    text-align: center;
+  }
+
+  .faculty-toast {
+    left: 16px;
+    right: 16px;
+    top: 16px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .faculty-page-header h1 {
+    font-size: 20px;
+  }
+
+  .schedule-section {
+    padding: 12px 8px;
+  }
+}
+
