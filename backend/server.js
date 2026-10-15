@@ -56,14 +56,17 @@ app.set("trust proxy", 1);
 // ==========================================
 const configuredFrontend = process.env.FRONTEND_URL
   ? (process.env.FRONTEND_URL.startsWith("http")
-      ? process.env.FRONTEND_URL
-      : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "")
+    ? process.env.FRONTEND_URL
+    : `https://${process.env.FRONTEND_URL}`).replace(/\/$/, "")
   : null;
+
 
 const allowedOrigins = [
   "https://singaji-feedback-system.vercel.app",
+  "https://singaji-feedback-system-git-ui-redesign-himanshu-sss-intern1.vercel.app",
   ...(configuredFrontend ? [configuredFrontend] : []),
 ];
+
 
 app.use(
   cors({
